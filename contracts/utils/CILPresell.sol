@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 /**
- * @notice Cilistia presale contract address. (https://docs.cilistia.com/cil#tokenomics)
+ * @notice Cilistia presell contract address. (https://docs.cilistia.com/cil#tokenomics)
  */
-contract CILPresale is Ownable {
+contract CILPresell is Ownable {
   using SafeERC20 for IERC20;
 
   // stable coin addresses
@@ -27,7 +27,7 @@ contract CILPresale is Ownable {
   // price per CIL
   uint256 public pricePerCIL = 800;
 
-  // presale period
+  // presell period
   uint32 public openingTime;
   uint32 public closingTime;
 
@@ -45,7 +45,7 @@ contract CILPresale is Ownable {
     uint256 _withdraw
   );
 
-  // fires when set presale period
+  // fires when set presell period
   event SetPeriod(uint32 openingTime, uint32 closingTime);
 
   // fires when change price
@@ -65,11 +65,11 @@ contract CILPresale is Ownable {
     address USDC_,
     address CIL_
   ) {
-    require(signer_ != address(0), "CILPresale: invalid signer address");
-    require(multiSig_ != address(0), "CILPresale: invalid multiSig address");
-    require(USDT_ != address(0), "CILPresale: invalid USDT address");
-    require(USDC_ != address(0), "CILPresale: invalid USDC address");
-    require(CIL_ != address(0), "CILPresale: invalid CIL address");
+    require(signer_ != address(0), "CILPresell: invalid signer address");
+    require(multiSig_ != address(0), "CILPresell: invalid multiSig address");
+    require(USDT_ != address(0), "CILPresell: invalid USDT address");
+    require(USDC_ != address(0), "CILPresell: invalid USDC address");
+    require(CIL_ != address(0), "CILPresell: invalid CIL address");
     signer = signer_;
     multiSig = multiSig_;
     USDT = USDT_;
@@ -120,10 +120,10 @@ contract CILPresale is Ownable {
     string memory tokenNameToDeposit_,
     Sig calldata sig_
   ) external returns (uint256 result) {
-    require(isOpen(), "CILPresale: not open now");
+    require(isOpen(), "CILPresell: not open now");
     require(
       _isBuyParamValid(amountToDeposit_, tokenNameToDeposit_, sig_),
-      "CILPresale: invalid signature"
+      "CILPresell: invalid signature"
     );
 
     address tokenToDeposit;
@@ -133,7 +133,7 @@ contract CILPresale is Ownable {
     else if (
       keccak256(abi.encodePacked(tokenNameToDeposit_)) == keccak256(abi.encodePacked("USDC"))
     ) tokenToDeposit = USDC;
-    else revert("CILPresale: incorrect deposit token");
+    else revert("CILPresell: incorrect deposit token");
 
     uint256 tokenDecimalToDeposit = IERC20Metadata(tokenToDeposit).decimals();
     uint256 multiplier = IERC20Metadata(CIL).decimals() - tokenDecimalToDeposit;
@@ -143,15 +143,15 @@ contract CILPresale is Ownable {
 
     require(
       amountToDeposit_ + currentAmountInUSD <= 1000 * (10**tokenDecimalToDeposit),
-      "CILPresale: max deposit amount is $1000 per wallet"
+      "CILPresell: max deposit amount is $1000 per wallet"
     );
 
     uint256 _balance = balance();
     uint256 amountWithdrawalCIL = (amountToDeposit_ * (10**multiplier) * 100) / pricePerCIL;
-    require(amountWithdrawalCIL <= _balance, "CILPresale: insufficient withdrawal amount");
+    require(amountWithdrawalCIL <= _balance, "CILPresell: insufficient withdrawal amount");
     require(
       IERC20(tokenToDeposit).balanceOf(_msgSender()) >= amountToDeposit_,
-      "CILPresale: insufficient deposit balance"
+      "CILPresell: insufficient deposit balance"
     );
 
     IERC20(tokenToDeposit).safeTransferFrom(_msgSender(), multiSig, amountToDeposit_);
@@ -171,13 +171,13 @@ contract CILPresale is Ownable {
   }
 
   /**
-   * @dev set presale settings
+   * @dev set presell settings
    * @param openingTime_ opening time of airdrop
    * @param closingTime_ closing time of airdrop
    */
   function setPeriod(uint32 openingTime_, uint32 closingTime_) external onlyOwner {
-    require(!isOpen(), "CILPresale: already opened");
-    require(closingTime_ > openingTime_, "CILPresale: invalid time window");
+    require(!isOpen(), "CILPresell: already opened");
+    require(closingTime_ > openingTime_, "CILPresell: invalid time window");
     openingTime = openingTime_;
     closingTime = closingTime_;
 
@@ -198,7 +198,7 @@ contract CILPresale is Ownable {
    * @param priceCIL_ price of the cil token
    */
   function renouncePrice(uint256 priceCIL_) external onlyOwner {
-    require(priceCIL_ > 0, "CILPresale: price must be greater than zero");
+    require(priceCIL_ > 0, "CILPresell: price must be greater than zero");
     pricePerCIL = priceCIL_;
 
     emit PriceChanged(priceCIL_);

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 /**
  * @notice CIL Airdrop contract, each og can claim 7.1% of total amount.  (https://docs.cilistia.com/cil#tokenomics)
@@ -34,6 +34,9 @@ contract CILAirdrop is Ownable {
 
   // fires when set period
   event SetPeriod(uint32 openingTime, uint32 closingTime);
+
+  // fires when claimed
+  event Claimed(address to, uint256 amount);
 
   /**
    * @param signer_ signer address
@@ -81,11 +84,12 @@ contract CILAirdrop is Ownable {
       "CILAirdrop: already claimed today"
     );
 
-    uint256 tokenAmount = totalClaimableAmountPerWallet / 2 weeks;
+    uint256 tokenAmount = totalClaimableAmountPerWallet / 14;
 
     lastClaimedTime[_msgSender()] = block.timestamp;
     IERC20(CIL).safeTransfer(_msgSender(), tokenAmount);
 
+    emit Claimed(_msgSender(), tokenAmount);
     return tokenAmount;
   }
 

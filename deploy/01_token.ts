@@ -17,7 +17,7 @@ const func: DeployFunction = async (hre) => {
   }
 
   await deploy(CIL__factory, {
-    args: [multiSig, 18],
+    args: [multiSig],
   });
 };
 

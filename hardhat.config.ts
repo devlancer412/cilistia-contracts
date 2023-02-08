@@ -26,9 +26,9 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: process.env.FORKING_ENABLED === "true",
         blockNumber: Number(process.env.FORKING_BLOCK_NUM) || undefined,
-        url: node_url("avalanche"),
+        url: node_url("goerli"),
       },
-      accounts: accounts("localhost"),
+      accounts: accounts("goerli"),
       mining: {
         auto: process.env.AUTO_MINING_ENABLED === "true",
         // interval: Number(process.env.MINING_INTERVAL),
@@ -39,9 +39,9 @@ const config: HardhatUserConfig = {
       accounts: accounts("localhost"),
       tags: ["local", "test"],
     },
-    avalanche: {
-      url: node_url("avalanche"),
-      accounts: accounts("avalanche"),
+    mainnet: {
+      url: node_url("mainnet"),
+      accounts: accounts("mainnet"),
       tags: ["prod", "live"],
     },
     goerli: {

@@ -35,7 +35,6 @@ class Ship {
     for (const [name, address] of Object.entries(namedAccounts)) {
       const signer = await ethers.getSigner(address);
       accounts[name] = signer;
-      users.push(signer);
     }
     const unnammedAccounts = await hre.getUnnamedAccounts();
     for (const address of unnammedAccounts) {
@@ -66,10 +65,14 @@ class Ship {
         from?: SignerWithAddress;
         args?: DeployParam<T>;
         log?: boolean;
+        aliasName?: string | null;
       }
     >,
   ) => {
     const contractName = contractFactory.name.split("__")[0];
+
+    const aliasName = option?.aliasName ?? contractName;
+
     const from = option?.from || this.accounts.deployer;
     const fromAddr = from.address;
 
@@ -81,8 +84,10 @@ class Ship {
         log = false;
       }
     }
-    const deployResult = await this.hre.deployments.deploy(contractName, {
+
+    const deployResult = await this.hre.deployments.deploy(aliasName, {
       ...option,
+      contract: contractName,
       from: fromAddr,
       args: option?.args,
       log,
@@ -101,10 +106,11 @@ class Ship {
   };
 
   connect = async <T extends ContractFactory>(
-    contractFactory: new () => T,
+    contractFactory: (new () => T) | string,
     newAddress?: string,
   ): Promise<ContractInstance<T>> => {
-    const contractName = contractFactory.name.split("__")[0];
+    const contractName =
+      typeof contractFactory == "string" ? contractFactory : contractFactory.name.split("__")[0];
     if (newAddress) {
       const factory = (await ethers.getContractFactory(contractName, this.accounts.deployer)) as T;
       return factory.attach(newAddress) as ContractInstance<T>;

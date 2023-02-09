@@ -1,6 +1,6 @@
 import { isAddress } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
-import { CILAirdrop__factory, CILPresell__factory, CIL__factory, MockERC20 } from "../types";
+import { CILAirdrop__factory, CILPreSale__factory, CIL__factory, MockERC20 } from "../types";
 import { Ship } from "../utils";
 
 const func: DeployFunction = async (hre) => {
@@ -32,12 +32,12 @@ const func: DeployFunction = async (hre) => {
     args: [signer, cil.address],
   });
 
-  const presell = await deploy(CILPresell__factory, {
+  const preSale = await deploy(CILPreSale__factory, {
     args: [signer, multiSig, usdtAddress, usdcAddress, cil.address],
   });
 
   if (!(await cil.initialized())) {
-    const tx = await cil.init(presell.address, airdrop.address, accounts.vault.address, uniswapRouter);
+    const tx = await cil.init(preSale.address, airdrop.address, accounts.vault.address, uniswapRouter);
     console.info("Initialized cil token on", tx.hash);
     await tx.wait();
   }

@@ -19,7 +19,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
   // staking contract address;
   address public staking;
 
-  // pool address
+  // uniswap addresses
   address public pool;
 
   // erc20 variables
@@ -46,13 +46,13 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
 
   /**
    * @dev init cilistia token supply
-   * @param presell_ presell contract address
+   * @param preSale_ preSale contract address
    * @param airdrop_ airdrop contract address
    * @param staking_ staking contract address
    * @param uniswapRouter_ uniswap router address
    */
   function init(
-    address presell_,
+    address preSale_,
     address airdrop_,
     address staking_,
     address uniswapRouter_
@@ -60,9 +60,9 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     require(!initialized, "CIL: already initialized");
 
     uint256 _decimals = decimals();
-    _mint(presell_, 50_000 * 10**_decimals);
+    _mint(preSale_, 50_000 * 10**_decimals);
     _mint(airdrop_, 20_000 * 10**_decimals);
-    _mint(multiSig, 4_930_000 * 10**_decimals);
+    _mint(multiSig, 4_930_000 * 10**_decimals); // 5,000,000 - 70,000 = 4,930,000
 
     staking = staking_;
 
@@ -74,6 +74,15 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     initialized = true;
 
     emit Initialized(pool);
+  }
+
+  /**
+   * @dev renounce price of CIL ($ per CIL)
+   * @param staking_ price of the cil token
+   */
+  function renounceStaking(address staking_) external onlyOwner {
+    require(staking_ != address(0), "CILPreSale: invalid staking address");
+    staking = staking_;
   }
 
   /**

@@ -17,6 +17,7 @@ import "dotenv/config";
 
 import "./tasks/account";
 import "./tasks/verify";
+import "./tasks/contracts";
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -53,7 +54,7 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       mainnet: verifyKey("etherscan"),
-      rinkeby: verifyKey("etherscan"),
+      goerli: verifyKey("etherscan"),
     },
   },
   solidity: {

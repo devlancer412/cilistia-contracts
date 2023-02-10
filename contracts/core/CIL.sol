@@ -104,10 +104,10 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
       _balances[from] = fromBalance - amount;
     }
     if (initialized && (from == pool || to == pool)) {
-      uint256 totalFee = amount / 100;
-      uint256 toStaking = (totalFee * 10) / 7;
+      uint256 totalFee = amount / 100; // 1% of swap amount
+      uint256 toStaking = (totalFee * 10) / 7; // send 70% to staking contract
       _balances[staking] += toStaking;
-      _balances[multiSig] += (totalFee - toStaking);
+      _balances[multiSig] += (totalFee - toStaking); // send 30% to team multisig wallet
       _balances[to] += (amount - totalFee);
     } else {
       _balances[to] += amount;

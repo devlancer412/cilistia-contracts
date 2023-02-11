@@ -5,25 +5,23 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-/**
- * @notice CIL Airdrop contract, each og can claim 7.1% of total amount.  (https://docs.cilistia.com/cil#tokenomics)
- */
+/// @notice CIL Airdrop contract, each og can claim 7.1% of total amount.  (https://docs.cilistia.com/cil#tokenomics)
 contract CILAirdrop is Ownable {
   using SafeERC20 for IERC20;
 
-  // cil token addresses
+  /// @notice cil token addresses
   address public immutable CIL;
 
-  // signer address
+  /// @notice signer address
   address public immutable signer;
 
-  // airdrop datas
+  /// @notice airdrop datas
   uint32 public openingTime;
   uint32 public closingTime;
   uint32 public ogNumber;
   uint256 public totalClaimableAmountPerWallet;
 
-  // address => claimed timestamp
+  /// @notice address => claimed timestamp
   mapping(address => uint256) public lastClaimedTime;
 
   struct Sig {
@@ -32,10 +30,10 @@ contract CILAirdrop is Ownable {
     uint8 v;
   }
 
-  // fires when set period
+  /// @notice fires when set period
   event SetPeriod(uint32 openingTime, uint32 closingTime);
 
-  // fires when claimed
+  /// @notice fires when claimed
   event Claimed(address to, uint256 amount);
 
   /**

@@ -65,4 +65,4 @@ const func: DeployFunction = async (hre) => {
 
 export default func;
 func.tags = ["utils"];
-func.dependencies = ["mocks", "token"];
+func.dependencies = ["mocks", "core"];

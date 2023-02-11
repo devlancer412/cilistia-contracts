@@ -1,6 +1,6 @@
 import { isAddress } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
-import { CIL__factory } from "../types";
+import { CILStaking__factory, CIL__factory } from "../types";
 import { Ship } from "../utils";
 
 const func: DeployFunction = async (hre) => {
@@ -16,10 +16,14 @@ const func: DeployFunction = async (hre) => {
     throw Error("Invalid multi sign address");
   }
 
-  await deploy(CIL__factory, {
+  const cil = await deploy(CIL__factory, {
     args: [multiSig],
+  });
+
+  await deploy(CILStaking__factory, {
+    args: [cil.address],
   });
 };
 
 export default func;
-func.tags = ["token"];
+func.tags = ["core"];

@@ -5,29 +5,27 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-/**
- * @notice Cilistia preSale contract address. (https://docs.cilistia.com/cil#tokenomics)
- */
+/// @notice Cilistia preSale contract address. (https://docs.cilistia.com/cil#tokenomics)
 contract CILPreSale is Ownable {
   using SafeERC20 for IERC20;
 
-  // stable coin addresses
+  /// @notice stable coin addresses
   address public immutable USDT;
   address public immutable USDC;
 
-  // cil token address
+  /// @notice cil token address
   address public immutable CIL;
 
-  // multiSig wallet address
+  /// @notice multiSig wallet address
   address public immutable multiSig;
 
-  // signer address
+  /// @notice signer address
   address public immutable signer;
 
-  // price per CIL
+  /// @notice price per CIL
   uint256 public pricePerCIL = 800;
 
-  // preSale period
+  /// @notice preSale period
   uint32 public openingTime;
   uint32 public closingTime;
 
@@ -37,7 +35,7 @@ contract CILPreSale is Ownable {
     uint8 v;
   }
 
-  // fires when buy CIL token
+  /// @notice fires when buy CIL token
   event Buy(
     address indexed _executor,
     string indexed _tokenNameToDeposit,
@@ -45,10 +43,10 @@ contract CILPreSale is Ownable {
     uint256 _withdraw
   );
 
-  // fires when set preSale period
+  /// @notice fires when set preSale period
   event SetPeriod(uint32 openingTime, uint32 closingTime);
 
-  // fires when change price
+  /// @notice fires when change price
   event PriceChanged(uint256 price);
 
   /**

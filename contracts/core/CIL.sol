@@ -7,24 +7,22 @@ import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-/**
- * @notice utility and governance token of the Cilistia protocol. (https://docs.cilistia.com/cil)
- */
+/// @notice utility and governance token of the Cilistia protocol. (https://docs.cilistia.com/cil)
 contract CIL is Context, IERC20, IERC20Metadata, Ownable {
-  // token initialize state
+  /// @notice token initialize state
   bool public initialized = false;
-  // community multiSig contract address
+  /// @notice community multiSig contract address
   address public immutable multiSig;
 
-  // staking contract address;
+  /// @notice staking contract address;
   address public staking;
 
-  // uniswap addresses
+  /// @notice uniswap addresses
   address public pool;
-  // liquidity extension
+  /// @notice liquidity extension
   address public liquidityExtension;
 
-  // erc20 variables
+  /// @notice erc20 variables
   mapping(address => uint256) private _balances;
 
   mapping(address => mapping(address => uint256)) private _allowances;
@@ -34,12 +32,10 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
   string private _name;
   string private _symbol;
 
-  // fires when initialize token
+  /// @notice fires when initialize token
   event Initialized(address pool);
 
-  /**
-   * @param multiSig_ multi sign contract address
-   */
+  /// @param multiSig_ multi sign contract address
   constructor(address multiSig_) {
     _name = "Cilistia";
     _symbol = "CIL";
@@ -90,9 +86,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     staking = staking_;
   }
 
-  /**
-   * @dev setup hook for fee 1% (70% to staking contract, 30% to multiSig wallet)
-   */
+  /// @dev setup hook for fee 1% (70% to staking contract, 30% to multiSig wallet)
   function _transfer(
     address from,
     address to,

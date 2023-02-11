@@ -13,9 +13,7 @@ contract LiquidityExtension is Ownable {
   // uniswap router address
   address public router;
 
-  /**
-   * @param router_ uniswap router address
-   */
+  /// @param router_ uniswap router address
   constructor(address router_) {
     router = router_;
   }
@@ -85,9 +83,7 @@ contract LiquidityExtension is Ownable {
     if (msg.value > amountETH) transferDust();
   }
 
-  /**
-   * @dev transfer remainning eth
-   */
+  /// @notice  transfer remainning eth
   function transferDust() internal {
     address liquidityProvider = msg.sender;
     payable(liquidityProvider).transfer(address(this).balance);
@@ -111,8 +107,6 @@ contract LiquidityExtension is Ownable {
     payable(benefactor).transfer(address(this).balance);
   }
 
-  /**
-   * @dev to receive eth from uniswap router
-   */
+  /// @notice to receive eth from uniswap router
   receive() external payable {}
 }

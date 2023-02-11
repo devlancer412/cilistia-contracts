@@ -16,5 +16,8 @@ interface ICILStaking {
   function unStake() external;
 
   /// @dev return colleted token amount
-  function collectedToken() external view returns (uint256);
+  function collectedToken(address staker) external view returns (uint256);
+
+  /// @dev return colleted token amount
+  function stakedToken(address staker) external view returns (uint256);
 }

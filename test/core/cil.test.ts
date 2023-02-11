@@ -16,7 +16,7 @@ import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { Ship } from "../../utils";
 import { contracts } from "../../config/constants";
-import { formatEther, parseEther } from "ethers/lib/utils";
+import { parseEther } from "ethers/lib/utils";
 
 chai.use(solidity);
 const { expect } = chai;
@@ -44,7 +44,7 @@ const setup = deployments.createFixture(async (hre) => {
   };
 });
 
-describe.only("Cil token test", () => {
+describe("Cil token test", () => {
   before(async () => {
     const scaffold = await setup();
 
@@ -59,13 +59,10 @@ describe.only("Cil token test", () => {
     weth = IERC20__factory.connect(await uniswapRouter.WETH(), deployer);
 
     // add liquidity for test
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
-    let tx = await cil.connect(vault).approve(liquidityExtension.address, parseEther("10"));
-    await tx.wait();
-    tx = await liquidityExtension.connect(vault).addLiquidityETH(cil.address, parseEther("10"), 0, 0, {
+    await cil.connect(vault).approve(liquidityExtension.address, parseEther("10"));
+    await liquidityExtension.connect(vault).addLiquidityETH(cil.address, parseEther("10"), 0, 0, {
       value: parseEther("1"),
     });
-    await tx.wait();
   });
 
   it("can't initialize again", async () => {
@@ -82,20 +79,23 @@ describe.only("Cil token test", () => {
   it("test swap fee", async () => {
     const stakingBeforeAmount = await cil.balanceOf(await cil.staking());
     const poolBeforeAmount = await cil.balanceOf(await cil.pool());
+    const multiSigAmount = await cil.balanceOf(vault.address);
+    const aliceAmount = await cil.balanceOf(alice.address);
 
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
-    const tx = await uniswapRouter.swapExactETHForTokens(
-      0,
-      [weth.address, cil.address],
-      alice.address,
-      deadline,
-      {
+    await uniswapRouter
+      .connect(alice)
+      .swapExactETHForTokens(0, [weth.address, cil.address], alice.address, deadline, {
         value: parseEther("0.1"),
-      },
-    );
-    await tx.wait();
+      });
 
-    const stakingDelta = (await cil.balanceOf(await cil.staking())).sub(stakingBeforeAmount); // 7/1000 = 0.007
+    const stakingDelta = (await cil.balanceOf(await cil.staking())).sub(stakingBeforeAmount);
+    const multiSigDelta = (await cil.balanceOf(vault.address)).sub(multiSigAmount);
     const poolDelta = poolBeforeAmount.sub(await cil.balanceOf(await cil.pool()));
+    const aliceDelta = (await cil.balanceOf(alice.address)).sub(aliceAmount);
+
+    expect(poolDelta.div(1000).mul(7)).eq(stakingDelta); // 0.7% goes to staking contract
+    expect(poolDelta.div(100)).eq(stakingDelta.add(multiSigDelta)); // 0.3% goes to multiSig wallet
+    expect(poolDelta.sub(stakingDelta.add(multiSigDelta))).eq(aliceDelta); // 99% goes to owner
   });
 });

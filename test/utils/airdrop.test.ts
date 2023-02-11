@@ -134,8 +134,7 @@ describe("Cil token airdrop test", () => {
 
     it("Owner can withdraw token", async () => {
       const amount = await cilAirdrop.balance();
-      const tx = await cilAirdrop.connect(deployer).withdraw(deployer.address);
-      await tx.wait();
+      await cilAirdrop.connect(deployer).withdraw(deployer.address);
 
       expect(await cilAirdrop.balance()).to.eq(0);
       expect(await cil.balanceOf(deployer.address)).to.eq(amount);

@@ -154,8 +154,7 @@ describe("Cil token preSale test", () => {
 
     it("Owner can withdraw token", async () => {
       const amount = await cilPreSale.balance();
-      const tx = await cilPreSale.connect(deployer).withdraw(deployer.address);
-      await tx.wait();
+      await cilPreSale.connect(deployer).withdraw(deployer.address);
 
       expect(await cilPreSale.balance()).to.eq(0);
       expect(await cil.balanceOf(deployer.address)).to.eq(amount);
@@ -168,8 +167,7 @@ describe("Cil token preSale test", () => {
     });
 
     it("Owner can set price of cil token", async () => {
-      const tx = await cilPreSale.connect(deployer).renouncePrice(1000);
-      await tx.wait();
+      await cilPreSale.connect(deployer).renouncePrice(1000);
 
       expect(await cilPreSale.pricePerCIL()).to.eq(1000);
     });

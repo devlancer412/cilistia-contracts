@@ -53,42 +53,37 @@ contract CILStaking is ICILStaking {
    * @param amount_ token amount to stake
    */
   function stake(uint256 amount_) external {
-    Stake memory lastStake = stakes[msg.sender];
-    if (lastStake.tokenAmount > 0) {
-      uint256 totalReleasable = _totalReleasable();
-      uint256 totalStakePoint = _totalReleasable();
-      uint256 stakePoint = lastStake.tokenAmount * (block.timestamp - lastStake.stakedTime);
-      uint256 rewardAmount = (totalReleasable * stakePoint) / totalStakePoint;
-
-      lastStake.tokenAmount += uint128(rewardAmount);
+    Stake memory newStake = stakes[msg.sender];
+    if (newStake.tokenAmount > 0) {
+      newStake.tokenAmount += uint128(_collectedTokenAmount(msg.sender));
     } else {
       stakers.push(msg.sender);
     }
 
-    lastStake.tokenAmount += uint128(amount_);
-    lastStake.stakedTime = uint64(block.timestamp);
-    lastStake.unlockableTime = lastStake.stakedTime + lockTime;
+    newStake.tokenAmount += uint128(amount_);
+    totalStakedAmount += (newStake.tokenAmount - stakes[msg.sender].tokenAmount);
+    newStake.stakedTime = uint64(block.timestamp);
+    newStake.unlockableTime = newStake.stakedTime + lockTime;
 
-    stakes[msg.sender] = lastStake;
+    stakes[msg.sender] = newStake;
 
-    totalStakedAmount += amount_;
     IERC20(cil).transferFrom(msg.sender, address(this), amount_);
 
-    emit StakeUpdated(msg.sender, lastStake.tokenAmount, lastStake.unlockableTime);
+    emit StakeUpdated(msg.sender, newStake.tokenAmount, newStake.unlockableTime);
   }
 
   /// @dev unstake staked token
   function unStake() external {
     require(stakes[msg.sender].tokenAmount > 0, "CILStaking: you didn't stake");
-    require(stakes[msg.sender].unlockableTime < block.timestamp, "CILStaking: ");
+    require(
+      stakes[msg.sender].unlockableTime < block.timestamp,
+      "CILStaking: can't unStake during lock time"
+    );
 
-    uint256 totalReleasable = _totalReleasable();
-    uint256 totalStakePoint = _totalReleasable();
-    uint256 stakePoint = stakes[msg.sender].tokenAmount *
-      (block.timestamp - stakes[msg.sender].stakedTime);
-    uint256 rewardAmount = (totalReleasable * stakePoint) / totalStakePoint;
+    uint256 rewardAmount = _collectedTokenAmount(msg.sender);
 
     rewardAmount += stakes[msg.sender].tokenAmount;
+    totalStakedAmount -= stakes[msg.sender].tokenAmount;
 
     for (uint256 i = 0; i < stakers.length; i++) {
       if (stakers[i] == msg.sender) {
@@ -104,24 +99,33 @@ contract CILStaking is ICILStaking {
     emit UnStaked(msg.sender, rewardAmount);
   }
 
-  /**
-   * @dev return colleted token amount
-   * @return collectedAmount total collected token amount
-   */
-  function collectedToken() external view returns (uint256 collectedAmount) {
+  /// @dev get collected token amount
+  function _collectedTokenAmount(address staker) private view returns (uint256) {
     uint256 totalReleasable = _totalReleasable();
-    uint256 totalStakePoint = _totalReleasable();
-    uint256 stakePoint = stakes[msg.sender].tokenAmount *
-      (block.timestamp - stakes[msg.sender].stakedTime);
+    uint256 totalStakePoint = _totalStakePoint();
+    uint256 stakePoint = stakes[staker].tokenAmount * (block.timestamp - stakes[staker].stakedTime);
 
-    collectedAmount = (totalReleasable * stakePoint) / totalStakePoint;
+    if (stakePoint == 0) {
+      return 0;
+    }
+
+    return (totalReleasable * stakePoint) / totalStakePoint;
   }
 
   /**
    * @dev return colleted token amount
+   * @return collectedAmount total collected token amount
+   */
+  function collectedToken(address staker) external view returns (uint256 collectedAmount) {
+    collectedAmount = _collectedTokenAmount(staker);
+  }
+
+  /**
+   * @dev return colleted token amount
+   * @param staker staker address
    * @return stakedAmount total staked token amount
    */
-  function stakedToken() external view returns (uint256 stakedAmount) {
-    return stakes[msg.sender].tokenAmount;
+  function stakedToken(address staker) public view returns (uint256 stakedAmount) {
+    stakedAmount = stakes[staker].tokenAmount;
   }
 }

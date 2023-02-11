@@ -4,6 +4,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import {
   CILAirdrop__factory,
   CILPreSale__factory,
+  CILStaking__factory,
   CIL__factory,
   LiquidityExtension__factory,
   MockERC20,
@@ -37,6 +38,7 @@ const func: DeployFunction = async (hre) => {
   }
 
   const cil = await connect(CIL__factory);
+  const cilStaking = await connect(CILStaking__factory);
 
   const airdrop = await deploy(CILAirdrop__factory, {
     args: [signer, cil.address],
@@ -54,7 +56,7 @@ const func: DeployFunction = async (hre) => {
     const tx = await cil.init(
       preSale.address,
       airdrop.address,
-      accounts.vault.address,
+      cilStaking.address,
       uniswapRouterAddress,
       liquidityExtension.address,
     );

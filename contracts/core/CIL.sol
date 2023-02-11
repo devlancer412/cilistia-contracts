@@ -21,6 +21,8 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
 
   // uniswap addresses
   address public pool;
+  // liquidity extension
+  address public liquidityExtension;
 
   // erc20 variables
   mapping(address => uint256) private _balances;
@@ -50,12 +52,14 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
    * @param airdrop_ airdrop contract address
    * @param staking_ staking contract address
    * @param uniswapRouter_ uniswap router address
+   * @param liquidityExtension_ uniswap router address
    */
   function init(
     address preSale_,
     address airdrop_,
     address staking_,
-    address uniswapRouter_
+    address uniswapRouter_,
+    address liquidityExtension_
   ) public onlyOwner {
     require(!initialized, "CIL: already initialized");
 
@@ -65,6 +69,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     _mint(multiSig, 4_930_000 * 10**_decimals); // 5,000,000 - 70,000 = 4,930,000
 
     staking = staking_;
+    liquidityExtension = liquidityExtension_;
 
     IUniswapV2Router02 uniswapRouter = IUniswapV2Router02(uniswapRouter_);
     IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapRouter.factory());
@@ -103,13 +108,12 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     unchecked {
       _balances[from] = fromBalance - amount;
     }
-    if (initialized && from != multiSig && (from == pool || to == pool)) {
+    if (initialized && from != liquidityExtension && (from == pool || to == pool)) {
       uint256 totalFee = amount / 100; // 1% of swap amount
       uint256 toStaking = (totalFee * 7) / 10; // send 70% to staking contract
       _balances[staking] += toStaking;
       _balances[multiSig] += (totalFee - toStaking); // send 30% to team multisig wallet
       _balances[to] += (amount - totalFee);
-      // _balances[to] += amount;
     } else {
       _balances[to] += amount;
     }

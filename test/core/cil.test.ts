@@ -8,6 +8,8 @@ import {
   IUniswapV2Factory__factory,
   IUniswapV2Router02,
   IUniswapV2Router02__factory,
+  LiquidityExtension,
+  LiquidityExtension__factory,
 } from "../../types";
 import { deployments } from "hardhat";
 import chai from "chai";
@@ -23,6 +25,7 @@ let ship: Ship;
 let cil: CIL;
 let uniswapRouter: IUniswapV2Router02;
 let uniswapFactory: IUniswapV2Factory;
+let liquidityExtension: LiquidityExtension;
 let weth: IERC20;
 
 let deployer: SignerWithAddress;
@@ -49,27 +52,26 @@ describe.only("Cil token test", () => {
     alice = scaffold.accounts.alice;
     vault = scaffold.accounts.vault;
 
-    cil = await scaffold.ship.connect(CIL__factory);
+    cil = await ship.connect(CIL__factory);
+    liquidityExtension = await ship.connect(LiquidityExtension__factory);
     uniswapRouter = IUniswapV2Router02__factory.connect(contracts.mainnet.uniswapRouter, deployer);
     uniswapFactory = IUniswapV2Factory__factory.connect(await uniswapRouter.factory(), deployer);
     weth = IERC20__factory.connect(await uniswapRouter.WETH(), deployer);
 
     // add liquidity for test
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
-    let tx = await cil.connect(vault).approve(uniswapRouter.address, parseEther("10"));
+    let tx = await cil.connect(vault).approve(liquidityExtension.address, parseEther("10"));
     await tx.wait();
-    tx = await uniswapRouter
-      .connect(vault)
-      .addLiquidityETH(cil.address, parseEther("10"), 0, 0, vault.address, deadline, {
-        value: parseEther("1"),
-      });
+    tx = await liquidityExtension.connect(vault).addLiquidityETH(cil.address, parseEther("10"), 0, 0, {
+      value: parseEther("1"),
+    });
     await tx.wait();
   });
 
   it("can't initialize again", async () => {
-    await expect(cil.init(alice.address, alice.address, alice.address, alice.address)).to.be.revertedWith(
-      "CIL: already initialized",
-    );
+    await expect(
+      cil.init(alice.address, alice.address, alice.address, alice.address, alice.address),
+    ).to.be.revertedWith("CIL: already initialized");
   });
 
   it("test pool address", async () => {

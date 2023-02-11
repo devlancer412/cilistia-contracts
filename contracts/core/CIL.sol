@@ -4,8 +4,8 @@ pragma solidity ^0.8.9;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
-import {IPeripheryImmutableState} from "@uniswap/v3-periphery/contracts/interfaces/IPeripheryImmutableState.sol";
-import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 /**
  * @notice utility and governance token of the Cilistia protocol. (https://docs.cilistia.com/cil)
@@ -66,10 +66,10 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
 
     staking = staking_;
 
-    IPeripheryImmutableState uniswapRouter = IPeripheryImmutableState(uniswapRouter_);
-    IUniswapV3Factory uniswapFactory = IUniswapV3Factory(uniswapRouter.factory());
+    IUniswapV2Router02 uniswapRouter = IUniswapV2Router02(uniswapRouter_);
+    IUniswapV2Factory uniswapFactory = IUniswapV2Factory(uniswapRouter.factory());
 
-    pool = uniswapFactory.createPool(address(this), uniswapRouter.WETH9(), 3000);
+    pool = uniswapFactory.createPair(address(this), uniswapRouter.WETH());
 
     initialized = true;
 
@@ -103,12 +103,13 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     unchecked {
       _balances[from] = fromBalance - amount;
     }
-    if (initialized && (from == pool || to == pool)) {
+    if (initialized && from != multiSig && (from == pool || to == pool)) {
       uint256 totalFee = amount / 100; // 1% of swap amount
-      uint256 toStaking = (totalFee * 10) / 7; // send 70% to staking contract
+      uint256 toStaking = (totalFee * 7) / 10; // send 70% to staking contract
       _balances[staking] += toStaking;
       _balances[multiSig] += (totalFee - toStaking); // send 30% to team multisig wallet
       _balances[to] += (amount - totalFee);
+      // _balances[to] += amount;
     } else {
       _balances[to] += amount;
     }

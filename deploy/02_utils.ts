@@ -1,14 +1,18 @@
 import { isAddress } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
+
 import { CILAirdrop__factory, CILPreSale__factory, CIL__factory, MockERC20 } from "../types";
 import { Ship } from "../utils";
+import { contracts } from "../config/constants";
 
 const func: DeployFunction = async (hre) => {
   const { deploy, connect, accounts } = await Ship.init(hre);
 
-  let usdtAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-  let usdcAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-  const uniswapRouter = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
+  const network = hre.network.name == "avax" ? "avax" : "mainnet";
+  let usdtAddress = contracts[network].USDT;
+  let usdcAddress = contracts[network].USDC;
+  const uniswapRouterAddress = contracts[network].uniswapRouter;
+
   let signer = process.env.CIL_SIGNER as string;
   let multiSig = process.env.CIL_MULTISIG as string;
 
@@ -37,7 +41,7 @@ const func: DeployFunction = async (hre) => {
   });
 
   if (!(await cil.initialized())) {
-    const tx = await cil.init(preSale.address, airdrop.address, accounts.vault.address, uniswapRouter);
+    const tx = await cil.init(preSale.address, airdrop.address, accounts.vault.address, uniswapRouterAddress);
     console.info("Initialized cil token on", tx.hash);
     await tx.wait();
   }

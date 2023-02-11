@@ -26,9 +26,7 @@ contract CILStaking is ICILStaking {
   /// @notice lock time - immutable 1 weeks
   uint64 public immutable lockTime = 1 weeks;
 
-  /**
-   * @param cil_ cil token address
-   */
+  /// @param cil_ cil token address
   constructor(address cil_) {
     cil = cil_;
   }
@@ -100,10 +98,11 @@ contract CILStaking is ICILStaking {
   }
 
   /// @dev get collected token amount
-  function _collectedTokenAmount(address staker) private view returns (uint256) {
+  function _collectedTokenAmount(address staker_) private view returns (uint256) {
     uint256 totalReleasable = _totalReleasable();
     uint256 totalStakePoint = _totalStakePoint();
-    uint256 stakePoint = stakes[staker].tokenAmount * (block.timestamp - stakes[staker].stakedTime);
+    uint256 stakePoint = stakes[staker_].tokenAmount *
+      (block.timestamp - stakes[staker_].stakedTime);
 
     if (stakePoint == 0) {
       return 0;
@@ -116,16 +115,16 @@ contract CILStaking is ICILStaking {
    * @dev return colleted token amount
    * @return collectedAmount total collected token amount
    */
-  function collectedToken(address staker) external view returns (uint256 collectedAmount) {
-    collectedAmount = _collectedTokenAmount(staker);
+  function collectedToken(address staker_) external view returns (uint256 collectedAmount) {
+    collectedAmount = _collectedTokenAmount(staker_);
   }
 
   /**
    * @dev return colleted token amount
-   * @param staker staker address
+   * @param staker_ staker address
    * @return stakedAmount total staked token amount
    */
-  function stakedToken(address staker) public view returns (uint256 stakedAmount) {
-    stakedAmount = stakes[staker].tokenAmount;
+  function stakedToken(address staker_) public view returns (uint256 stakedAmount) {
+    stakedAmount = stakes[staker_].tokenAmount;
   }
 }

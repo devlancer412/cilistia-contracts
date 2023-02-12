@@ -13,7 +13,7 @@ contract Escrow is Ownable {
   using SafeERC20 for IERC20;
 
   enum TransactionState {
-    Pendding,
+    Pending,
     Rejected,
     Fulfilled,
     Canceled
@@ -43,7 +43,7 @@ contract Escrow is Ownable {
   mapping(bytes32 => mapping(address => bool)) public sign;
 
   /// @notice fires when create transaction
-  event TranasctionCreated(
+  event TransactionCreated(
     bytes32 key,
     address indexed token,
     address indexed from,
@@ -57,6 +57,9 @@ contract Escrow is Ownable {
 
   /// @notice fires when sign to transaction
   event TransactionSigned(bytes32 indexed key, address indexed user);
+
+  /// @notice fires when clear all sign of transaction
+  event SignCleared(bytes32 indexed key);
 
   /// @notice fires when token whitelisted
   event TokenWhitelisted(address indexed token, bool state);
@@ -75,8 +78,8 @@ contract Escrow is Ownable {
     emit TokenWhitelisted(address(0), true);
   }
 
-  modifier penddingTransaction(bytes32 key) {
-    require(transactions[key].token != address(0), "Escrow: such transaction doesn't exist");
+  modifier pendingTransaction(bytes32 key) {
+    require(transactions[key].updatedTime != 0, "Escrow: such transaction doesn't exist");
     require(
       transactions[key].state != TransactionState.Canceled &&
         transactions[key].state != TransactionState.Fulfilled,
@@ -113,44 +116,50 @@ contract Escrow is Ownable {
   /**
    * @dev creates transaction
    * @param token token address
-   * @param from from address
    * @param to to address
    * @param amount amount of token
    */
   function createTransaction(
     address token,
-    address from,
     address to,
     uint256 amount
   ) public payable {
     require(whitelisted[token], "Escrow: not whitelisted token");
 
-    bytes32 key = getTransactionKey(token, from, to, block.timestamp);
+    bytes32 key = getTransactionKey(token, msg.sender, to, block.timestamp);
     Transaction memory transaction = Transaction(
       token,
-      from,
+      msg.sender,
       to,
       uint32(block.timestamp),
       amount,
-      TransactionState.Pendding
+      TransactionState.Pending
     );
 
     transactions[key] = transaction;
 
     if (token == address(0)) {
-      require(amount == msg.value, "Escrow: invalid eth value");
+      require(amount == msg.value, "Escrow: invalid eth amount");
     } else {
-      IERC20(token).transferFrom(from, address(this), amount);
+      IERC20(token).transferFrom(msg.sender, address(this), amount);
     }
 
-    emit TranasctionCreated(key, token, from, to, uint32(block.timestamp), amount);
+    emit TransactionCreated(key, token, msg.sender, to, uint32(block.timestamp), amount);
+  }
+
+  /// @dev cancel all sign of transaction when reject or resume
+  function _cancelAllSign(bytes32 key) private {
+    sign[key][transactions[key].from] = false;
+    sign[key][transactions[key].to] = false;
+
+    emit SignCleared(key);
   }
 
   /**
    * @dev sign to transaction
    * @param key key of transaction
    */
-  function singTransaction(bytes32 key) public penddingTransaction(key) {
+  function signTransaction(bytes32 key) public pendingTransaction(key) {
     require(!sign[key][msg.sender], "Escrow: you already signed to this transaction");
 
     sign[key][msg.sender] = true;
@@ -162,9 +171,10 @@ contract Escrow is Ownable {
    * @dev reject transaction - change transaction state to rejected
    * @param key key of transaction
    */
-  function rejectTransaction(bytes32 key) public penddingTransaction(key) {
+  function rejectTransaction(bytes32 key) public pendingTransaction(key) {
+    require(transactions[key].from == msg.sender, "Escrow: you aren't sender of this transaction");
     require(
-      transactions[key].state == TransactionState.Pendding,
+      transactions[key].state == TransactionState.Pending,
       "Escrow: invalid transaction state"
     );
 
@@ -174,6 +184,7 @@ contract Escrow is Ownable {
     newTransaction.updatedTime = uint32(block.timestamp);
 
     transactions[key] = newTransaction;
+    _cancelAllSign(key);
 
     emit TransactionUpdated(key, TransactionState.Rejected, uint32(block.timestamp));
   }
@@ -182,7 +193,8 @@ contract Escrow is Ownable {
    * @dev resume transaction - change transaction state to pedding
    * @param key key of transaction
    */
-  function resumeTransaction(bytes32 key) public penddingTransaction(key) {
+  function resumeTransaction(bytes32 key) public pendingTransaction(key) {
+    require(transactions[key].from == msg.sender, "Escrow: you aren't sender of this transaction");
     require(
       transactions[key].state == TransactionState.Rejected,
       "Escrow: invalid transaction state"
@@ -190,19 +202,20 @@ contract Escrow is Ownable {
 
     Transaction memory newTransaction = transactions[key];
 
-    newTransaction.state = TransactionState.Pendding;
+    newTransaction.state = TransactionState.Pending;
     newTransaction.updatedTime = uint32(block.timestamp);
 
     transactions[key] = newTransaction;
+    _cancelAllSign(key);
 
-    emit TransactionUpdated(key, TransactionState.Pendding, uint32(block.timestamp));
+    emit TransactionUpdated(key, TransactionState.Pending, uint32(block.timestamp));
   }
 
   /**
    * @dev finish transaction
    * @param key key of transaction
    */
-  function finishTransaction(bytes32 key) public penddingTransaction(key) {
+  function finishTransaction(bytes32 key) public pendingTransaction(key) {
     require(
       block.timestamp > transactions[key].updatedTime + lockTime,
       "Escrow: can't finished transaction during lock time"
@@ -214,7 +227,7 @@ contract Escrow is Ownable {
 
     address destination;
     TransactionState state;
-    if (transactions[key].state == TransactionState.Pendding) {
+    if (transactions[key].state == TransactionState.Pending) {
       transactions[key].state = TransactionState.Fulfilled;
 
       destination = transactions[key].to;
@@ -228,7 +241,11 @@ contract Escrow is Ownable {
       revert("Escrow: invalid transaction state");
     }
 
-    IERC20(transactions[key].token).transfer(destination, transactions[key].amount);
+    if (transactions[key].token == address(0)) {
+      payable(destination).transfer(transactions[key].amount);
+    } else {
+      IERC20(transactions[key].token).transfer(destination, transactions[key].amount);
+    }
 
     emit TransactionUpdated(key, state, uint32(block.timestamp));
   }
@@ -240,7 +257,7 @@ contract Escrow is Ownable {
    */
   function forceFinishTrancsaction(bytes32 key, bool direction)
     public
-    penddingTransaction(key)
+    pendingTransaction(key)
     onlyOwner
   {
     require(

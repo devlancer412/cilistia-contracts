@@ -30,7 +30,7 @@ const setup = deployments.createFixture(async (hre) => {
   };
 });
 
-describe.only("Cil staking contract test", () => {
+describe("Cil staking contract test", () => {
   before(async () => {
     const scaffold = await setup();
 

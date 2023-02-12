@@ -167,7 +167,7 @@ describe("Escrow contract test", () => {
 
     expect(transactionData[5]).to.eq(TransactionState.Fulfilled); // transaction state
 
-    expect(await cil.balanceOf(bob.address)).to.eq(parseEther("1"));
+    expect(await cil.balanceOf(bob.address)).to.eq(parseEther("0.99")); // 1% for fee
   });
 
   it("escrow with ether", async () => {
@@ -196,6 +196,6 @@ describe("Escrow contract test", () => {
 
     await escrow.connect(alice).finishTransaction(key);
 
-    expect(await bob.getBalance()).to.eq(bobLastEthValue.add(parseEther("1")));
+    expect(await bob.getBalance()).to.eq(bobLastEthValue.add(parseEther("0.99"))); // 1% for fee
   });
 });

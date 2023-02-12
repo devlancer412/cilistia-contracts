@@ -35,6 +35,8 @@ contract Escrow is Ownable {
   // address public staking;
   /// @notice whitelistedToken
   mapping(address => bool) public whitelisted;
+  /// @notice fee amount
+  mapping(address => uint256) private feeAmount;
 
   /// @notice transactions key => Transaction
   mapping(bytes32 => Transaction) public transactions;
@@ -227,24 +229,30 @@ contract Escrow is Ownable {
 
     address destination;
     TransactionState state;
+    uint256 amount;
     if (transactions[key].state == TransactionState.Pending) {
       transactions[key].state = TransactionState.Fulfilled;
 
       destination = transactions[key].to;
       state = TransactionState.Fulfilled;
+      uint256 fee = transactions[key].amount / 100;
+      amount = transactions[key].amount - fee;
+
+      feeAmount[transactions[key].token] += fee;
     } else if (transactions[key].state == TransactionState.Rejected) {
       transactions[key].state = TransactionState.Canceled;
 
       destination = transactions[key].from;
       state = TransactionState.Canceled;
+      amount = transactions[key].amount;
     } else {
       revert("Escrow: invalid transaction state");
     }
 
     if (transactions[key].token == address(0)) {
-      payable(destination).transfer(transactions[key].amount);
+      payable(destination).transfer(amount);
     } else {
-      IERC20(transactions[key].token).transfer(destination, transactions[key].amount);
+      IERC20(transactions[key].token).transfer(destination, amount);
     }
 
     emit TransactionUpdated(key, state, uint32(block.timestamp));
@@ -267,24 +275,51 @@ contract Escrow is Ownable {
 
     address destination;
     TransactionState state;
+    uint256 amount;
     if (direction) {
       transactions[key].state = TransactionState.Fulfilled;
 
       destination = transactions[key].to;
       state = TransactionState.Fulfilled;
+      uint256 fee = transactions[key].amount / 100;
+      amount = transactions[key].amount - fee;
+
+      feeAmount[transactions[key].token] += fee;
     } else {
       transactions[key].state = TransactionState.Canceled;
 
       destination = transactions[key].from;
       state = TransactionState.Canceled;
+      amount = transactions[key].amount;
     }
 
     if (transactions[key].token == address(0)) {
-      payable(destination).transfer(transactions[key].amount);
+      payable(destination).transfer(amount);
     } else {
-      IERC20(transactions[key].token).transfer(destination, transactions[key].amount);
+      IERC20(transactions[key].token).transfer(destination, amount);
     }
 
     emit TransactionUpdated(key, state, uint32(block.timestamp));
+  }
+
+  /**
+   * @dev Recovery functions incase assets are stuck in the contract
+   * @param token token address
+   * @param benefactor receiver address
+   */
+  function recoverLeftoverTokens(address token, address benefactor) public onlyOwner {
+    feeAmount[token] = 0;
+
+    IERC20(token).transfer(benefactor, feeAmount[token]);
+  }
+
+  /**
+   * @dev Recovery functions native token are stuck in the contract
+   * @param benefactor receiver address
+   */
+  function recoverNativeToken(address benefactor) public onlyOwner {
+    feeAmount[address(0)] = 0;
+
+    payable(benefactor).transfer(feeAmount[address(0)]);
   }
 }

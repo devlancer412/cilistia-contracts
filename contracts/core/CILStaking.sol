@@ -6,13 +6,15 @@ import {ICILStaking} from "./interfaces/ICILStaking.sol";
 
 /// @notice cilistia staking contract
 contract CILStaking is ICILStaking {
-  // cil token address
+  /// @notice cil token address
   address public immutable cil;
+  /// @notice p2p marketplace contract address
+  address public immutable marketplace;
 
   struct Stake {
-    uint128 tokenAmount; // amount of tokens locked in a stake
-    uint64 stakedTime; // start time of locking
-    uint64 unlockableTime; // end time of the locking
+    uint256 tokenAmount; // amount of tokens locked in a stake
+    uint256 lockedAmount; // amount of tokens locked in a stake
+    uint256 stakedTime; // start time of locking
   }
 
   /// @notice active stakes for each user
@@ -24,11 +26,15 @@ contract CILStaking is ICILStaking {
   uint256 public totalStakedAmount;
 
   /// @notice lock time - immutable 1 weeks
-  uint64 public immutable lockTime = 1 weeks;
+  uint256 public immutable lockTime = 1 weeks;
 
-  /// @param cil_ cil token address
-  constructor(address cil_) {
+  /**
+   * @param cil_ cil token address
+   * @param marketplace_ marketplace address
+   */
+  constructor(address cil_, address marketplace_) {
     cil = cil_;
+    marketplace = marketplace_;
   }
 
   /// @dev return total releasable token amount of staking contract
@@ -53,48 +59,58 @@ contract CILStaking is ICILStaking {
   function stake(uint256 amount_) external {
     Stake memory newStake = stakes[msg.sender];
     if (newStake.tokenAmount > 0) {
-      newStake.tokenAmount += uint128(_collectedTokenAmount(msg.sender));
+      newStake.tokenAmount += _collectedTokenAmount(msg.sender);
     } else {
       stakers.push(msg.sender);
     }
 
-    newStake.tokenAmount += uint128(amount_);
+    newStake.tokenAmount += amount_;
     totalStakedAmount += (newStake.tokenAmount - stakes[msg.sender].tokenAmount);
-    newStake.stakedTime = uint64(block.timestamp);
-    newStake.unlockableTime = newStake.stakedTime + lockTime;
+    newStake.stakedTime = block.timestamp;
 
     stakes[msg.sender] = newStake;
 
     IERC20(cil).transferFrom(msg.sender, address(this), amount_);
 
-    emit StakeUpdated(msg.sender, newStake.tokenAmount, newStake.unlockableTime);
+    emit StakeUpdated(msg.sender, newStake.tokenAmount, newStake.lockedAmount);
   }
 
-  /// @dev unstake staked token
-  function unStake() external {
-    require(stakes[msg.sender].tokenAmount > 0, "CILStaking: you didn't stake");
-    require(
-      stakes[msg.sender].unlockableTime < block.timestamp,
-      "CILStaking: can't unStake during lock time"
-    );
-
+  /**
+   * @dev unstake staked token
+   * @param amount_ token amount to unstake
+   */
+  function unStake(uint256 amount_) external {
     uint256 rewardAmount = _collectedTokenAmount(msg.sender);
 
-    rewardAmount += stakes[msg.sender].tokenAmount;
-    totalStakedAmount -= stakes[msg.sender].tokenAmount;
+    Stake memory newStake = stakes[msg.sender];
+    uint256 newTotalStakedAmount = totalStakedAmount;
 
-    for (uint256 i = 0; i < stakers.length; i++) {
-      if (stakers[i] == msg.sender) {
-        stakers[i] = stakers[stakers.length - 1];
-        stakers.pop();
+    require(
+      newStake.tokenAmount + rewardAmount > newStake.lockedAmount + amount_,
+      "CILStaking: insufficient unstake amount"
+    );
+
+    newStake.tokenAmount += rewardAmount;
+    newStake.tokenAmount -= amount_;
+
+    newTotalStakedAmount += rewardAmount;
+    newTotalStakedAmount -= amount_;
+
+    if (newStake.tokenAmount == 0) {
+      for (uint256 i = 0; i < stakers.length; i++) {
+        if (stakers[i] == msg.sender) {
+          stakers[i] = stakers[stakers.length - 1];
+          stakers.pop();
+        }
       }
     }
 
-    stakes[msg.sender].tokenAmount = 0;
+    stakes[msg.sender] = newStake;
+    totalStakedAmount = newTotalStakedAmount;
 
-    IERC20(cil).transfer(msg.sender, rewardAmount);
+    IERC20(cil).transfer(msg.sender, amount_);
 
-    emit UnStaked(msg.sender, rewardAmount);
+    emit UnStaked(msg.sender, amount_);
   }
 
   /// @dev get collected token amount
@@ -122,9 +138,31 @@ contract CILStaking is ICILStaking {
   /**
    * @dev return colleted token amount
    * @param staker_ staker address
-   * @return stakedAmount total staked token amount
+   * @return stakingAmount lockable staking token amount
    */
-  function stakedToken(address staker_) public view returns (uint256 stakedAmount) {
-    stakedAmount = stakes[staker_].tokenAmount;
+  function lockableCil(address staker_) external view returns (uint256 stakingAmount) {
+    stakingAmount = stakes[staker_].tokenAmount - stakes[staker_].lockedAmount;
+  }
+
+  /**
+   * @dev return colleted token amount
+   * @param staker_ staker address
+   * @return stakingAmount unlocked staking token amount
+   */
+  function lockedCil(address staker_) external view returns (uint256 stakingAmount) {
+    stakingAmount = stakes[staker_].tokenAmount - stakes[staker_].lockedAmount;
+  }
+
+  /**
+   * @dev lock staked token: called from marketplace contract
+   * @param amount_ token amount to lock
+   */
+  function lock(address staker_, uint256 amount_) external {
+    require(msg.sender == marketplace, "CILStaking: forbidden");
+    require(stakes[staker_].tokenAmount >= amount_, "CILStaking: insufficient staking amount");
+
+    stakes[staker_].lockedAmount = amount_;
+
+    emit StakeUpdated(staker_, stakes[staker_].tokenAmount, amount_);
   }
 }

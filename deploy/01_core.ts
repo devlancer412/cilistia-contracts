@@ -1,6 +1,6 @@
 import { isAddress } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
-import { CILStaking__factory, CIL__factory, Escrow__factory } from "../types";
+import { CILStaking__factory, CIL__factory } from "../types";
 import { Ship } from "../utils";
 
 const func: DeployFunction = async (hre) => {
@@ -21,10 +21,6 @@ const func: DeployFunction = async (hre) => {
   });
 
   await deploy(CILStaking__factory, {
-    args: [cil.address],
-  });
-
-  await deploy(Escrow__factory, {
     args: [cil.address],
   });
 };

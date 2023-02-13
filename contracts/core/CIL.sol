@@ -56,13 +56,12 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     address staking_,
     address uniswapRouter_,
     address liquidityExtension_
-  ) public onlyOwner {
+  ) external onlyOwner {
     require(!initialized, "CIL: already initialized");
 
-    uint256 _decimals = decimals();
-    _mint(preSale_, 50_000 * 10**_decimals);
-    _mint(airdrop_, 20_000 * 10**_decimals);
-    _mint(multiSig, 4_930_000 * 10**_decimals); // 5,000,000 - 70,000 = 4,930,000
+    _mint(preSale_, 50_000 * 1e18);
+    _mint(airdrop_, 20_000 * 1e18);
+    _mint(multiSig, 4_930_000 * 1e18); // 5,000,000 - 70,000 = 4,930,000
 
     staking = staking_;
     liquidityExtension = liquidityExtension_;
@@ -121,27 +120,27 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
   // ERC20 functions
   ////////////////////////////////////////////////////
 
-  function name() public view virtual override returns (string memory) {
+  function name() external view virtual override returns (string memory) {
     return _name;
   }
 
-  function symbol() public view virtual override returns (string memory) {
+  function symbol() external view virtual override returns (string memory) {
     return _symbol;
   }
 
-  function decimals() public view virtual override returns (uint8) {
+  function decimals() external view virtual override returns (uint8) {
     return 18;
   }
 
-  function totalSupply() public view virtual override returns (uint256) {
+  function totalSupply() external view virtual override returns (uint256) {
     return _totalSupply;
   }
 
-  function balanceOf(address account) public view virtual override returns (uint256) {
+  function balanceOf(address account) external view virtual override returns (uint256) {
     return _balances[account];
   }
 
-  function transfer(address to, uint256 amount) public virtual override returns (bool) {
+  function transfer(address to, uint256 amount) external virtual override returns (bool) {
     address owner = _msgSender();
     _transfer(owner, to, amount);
     return true;
@@ -157,7 +156,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     return _allowances[owner][spender];
   }
 
-  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+  function approve(address spender, uint256 amount) external virtual override returns (bool) {
     address owner = _msgSender();
     _approve(owner, spender, amount);
     return true;
@@ -167,7 +166,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     address from,
     address to,
     uint256 amount
-  ) public virtual override returns (bool) {
+  ) external virtual override returns (bool) {
     address spender = _msgSender();
     _spendAllowance(from, spender, amount);
     _transfer(from, to, amount);
@@ -181,7 +180,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
   }
 
   function decreaseAllowance(address spender, uint256 subtractedValue)
-    public
+    external
     virtual
     returns (bool)
   {

@@ -12,6 +12,9 @@ interface ICILStaking {
   /// @dev unstake staked token
   function lock(address staker_, uint256 amount_) external;
 
+  /// @dev remove staking data
+  function remove(address staker_) external;
+
   /// @dev return colleted token amount
   function collectedToken(address staker) external view returns (uint256);
 

@@ -15,15 +15,15 @@ import { contracts } from "../config/constants";
 const func: DeployFunction = async (hre) => {
   const { deploy, connect, accounts } = await Ship.init(hre);
 
-  const network = hre.network.name == "avax" ? "avax" : "mainnet";
-  let usdtAddress = contracts[network].USDT;
-  let usdcAddress = contracts[network].USDC;
+  const network = hre.network.name as "mainnet" | "avax" | "goerli" | "hardhat";
+  let usdtAddress = contracts[network]?.USDT;
+  let usdcAddress = contracts[network]?.USDC;
   const uniswapRouterAddress = contracts[network].uniswapRouter;
 
   let signer = process.env.CIL_SIGNER as string;
   let multiSig = process.env.CIL_MULTISIG as string;
 
-  if (!hre.network.tags.prod) {
+  if (!usdtAddress || !usdcAddress) {
     usdtAddress = ((await connect("USDT")) as MockERC20).address;
     usdcAddress = ((await connect("USDC")) as MockERC20).address;
     signer = accounts.signer.address;

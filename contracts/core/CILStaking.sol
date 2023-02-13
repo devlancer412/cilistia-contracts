@@ -6,6 +6,8 @@ import {ICILStaking} from "./interfaces/ICILStaking.sol";
 
 /// @notice cilistia staking contract
 contract CILStaking is ICILStaking {
+  /// @notice multi sign wallet address of team
+  address public immutable multiSig;
   /// @notice cil token address
   address public immutable cil;
   /// @notice p2p marketplace contract address
@@ -31,25 +33,16 @@ contract CILStaking is ICILStaking {
   /**
    * @param cil_ cil token address
    * @param marketplace_ marketplace address
+   * @param multiSig_ multi sign wallet address
    */
-  constructor(address cil_, address marketplace_) {
+  constructor(
+    address cil_,
+    address marketplace_,
+    address multiSig_
+  ) {
     cil = cil_;
     marketplace = marketplace_;
-  }
-
-  /// @dev return total releasable token amount of staking contract
-  function _totalReleasable() private view returns (uint256) {
-    return IERC20(cil).balanceOf(address(this)) - totalStakedAmount;
-  }
-
-  /// @dev return total stake point of staking contract stake point = amount * period
-  function _totalStakePoint() private view returns (uint256 totalStakePoint) {
-    totalStakePoint = 0;
-    for (uint256 i = 0; i < stakers.length; i++) {
-      totalStakePoint +=
-        stakes[stakers[i]].tokenAmount *
-        (block.timestamp - stakes[stakers[i]].stakedTime);
-    }
+    multiSig = multiSig_;
   }
 
   /**
@@ -113,20 +106,6 @@ contract CILStaking is ICILStaking {
     emit UnStaked(msg.sender, amount_);
   }
 
-  /// @dev get collected token amount
-  function _collectedTokenAmount(address staker_) private view returns (uint256) {
-    uint256 totalReleasable = _totalReleasable();
-    uint256 totalStakePoint = _totalStakePoint();
-    uint256 stakePoint = stakes[staker_].tokenAmount *
-      (block.timestamp - stakes[staker_].stakedTime);
-
-    if (stakePoint == 0) {
-      return 0;
-    }
-
-    return (totalReleasable * stakePoint) / totalStakePoint;
-  }
-
   /**
    * @dev return colleted token amount
    * @return collectedAmount total collected token amount
@@ -164,5 +143,51 @@ contract CILStaking is ICILStaking {
     stakes[staker_].lockedAmount = amount_;
 
     emit StakeUpdated(staker_, stakes[staker_].tokenAmount, amount_);
+  }
+
+  /// @dev remove staking data
+  function remove(address staker_) external {
+    require(msg.sender == marketplace, "CILStaking: forbidden");
+
+    Stake memory newStake = stakes[staker_];
+
+    uint256 reward = _collectedTokenAmount(staker_) + newStake.stakedTime;
+
+    newStake.stakedTime = block.timestamp;
+    newStake.tokenAmount = 0;
+    newStake.lockedAmount = 0;
+
+    IERC20(cil).transfer(multiSig, reward);
+
+    emit StakeUpdated(staker_, 0, 0);
+  }
+
+  /// @dev return total releasable token amount of staking contract
+  function _totalReleasable() private view returns (uint256) {
+    return IERC20(cil).balanceOf(address(this)) - totalStakedAmount;
+  }
+
+  /// @dev return total stake point of staking contract stake point = amount * period
+  function _totalStakePoint() private view returns (uint256 totalStakePoint) {
+    totalStakePoint = 0;
+    for (uint256 i = 0; i < stakers.length; i++) {
+      totalStakePoint +=
+        stakes[stakers[i]].tokenAmount *
+        (block.timestamp - stakes[stakers[i]].stakedTime);
+    }
+  }
+
+  /// @dev get collected token amount
+  function _collectedTokenAmount(address staker_) private view returns (uint256) {
+    uint256 totalReleasable = _totalReleasable();
+    uint256 totalStakePoint = _totalStakePoint();
+    uint256 stakePoint = stakes[staker_].tokenAmount *
+      (block.timestamp - stakes[staker_].stakedTime);
+
+    if (stakePoint == 0) {
+      return 0;
+    }
+
+    return (totalReleasable * stakePoint) / totalStakePoint;
   }
 }

@@ -1,0 +1,479 @@
+{
+  "address": "0x6442b9e50d5fd964740132565956227fC9a04cc3",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "cil_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "marketplace_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "multiSig_",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "staker",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "stakedAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "lockedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "StakeUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "staker",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "rewardAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "UnStaked",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "cil",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "staker_",
+          "type": "address"
+        }
+      ],
+      "name": "collectedToken",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "collectedAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "staker_",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount_",
+          "type": "uint256"
+        }
+      ],
+      "name": "lock",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lockTime",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "staker_",
+          "type": "address"
+        }
+      ],
+      "name": "lockableCil",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "stakingAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "staker_",
+          "type": "address"
+        }
+      ],
+      "name": "lockedCil",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "stakingAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "marketplace",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "multiSig",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "staker_",
+          "type": "address"
+        }
+      ],
+      "name": "remove",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount_",
+          "type": "uint256"
+        }
+      ],
+      "name": "stake",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "stakes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lockedAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "stakedTime",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalStakedAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount_",
+          "type": "uint256"
+        }
+      ],
+      "name": "unStake",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x291c84cd5fe464b5a4e49230e84e3a57d5ad13097f802a9c98b1eeca3991f774",
+  "receipt": {
+    "to": null,
+    "from": "0xf5CA36c9873d61Bc28C117BD470981Ef6647A685",
+    "contractAddress": "0x6442b9e50d5fd964740132565956227fC9a04cc3",
+    "transactionIndex": 74,
+    "gasUsed": "869997",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xa994c6f9ede79c6eed1ecb6031b95d15999468e9c88a157615f1acdedc85fcda",
+    "transactionHash": "0x291c84cd5fe464b5a4e49230e84e3a57d5ad13097f802a9c98b1eeca3991f774",
+    "logs": [],
+    "blockNumber": 8492790,
+    "cumulativeGasUsed": "10453814",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x87d8B0b77BB87cFE92CcD1D1B2B0656839d3a093",
+    "0x26D7701E2e76f1ed743D8F1e5F23df75f0DCCe2a",
+    "0x5C29Ac1d01aE85Bd93D1Cc1C457c0d4aed46C0AF"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "abdc32abd1c0b218d419fc4171b6e4b0",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"cil_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"marketplace_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"multiSig_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakedAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"lockedAmount\",\"type\":\"uint256\"}],\"name\":\"StakeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"staker\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewardAmount\",\"type\":\"uint256\"}],\"name\":\"UnStaked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"cil\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker_\",\"type\":\"address\"}],\"name\":\"collectedToken\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"collectedAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker_\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount_\",\"type\":\"uint256\"}],\"name\":\"lock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker_\",\"type\":\"address\"}],\"name\":\"lockableCil\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"stakingAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker_\",\"type\":\"address\"}],\"name\":\"lockedCil\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"stakingAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"marketplace\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"multiSig\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"staker_\",\"type\":\"address\"}],\"name\":\"remove\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount_\",\"type\":\"uint256\"}],\"name\":\"stake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"stakes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lockedAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakedTime\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalStakedAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount_\",\"type\":\"uint256\"}],\"name\":\"unStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"collectedToken(address)\":{\"details\":\"return colleted token amount\",\"returns\":{\"collectedAmount\":\"total collected token amount\"}},\"constructor\":{\"params\":{\"cil_\":\"cil token address\",\"marketplace_\":\"marketplace address\",\"multiSig_\":\"multi sign wallet address\"}},\"lock(address,uint256)\":{\"details\":\"lock staked token: called from marketplace contract\",\"params\":{\"amount_\":\"token amount to lock\"}},\"lockableCil(address)\":{\"details\":\"return colleted token amount\",\"params\":{\"staker_\":\"staker address\"},\"returns\":{\"stakingAmount\":\"lockable staking token amount\"}},\"lockedCil(address)\":{\"details\":\"return colleted token amount\",\"params\":{\"staker_\":\"staker address\"},\"returns\":{\"stakingAmount\":\"unlocked staking token amount\"}},\"remove(address)\":{\"details\":\"remove staking data\"},\"stake(uint256)\":{\"details\":\"stake token with amount\",\"params\":{\"amount_\":\"token amount to stake\"}},\"unStake(uint256)\":{\"details\":\"unstake staked token\",\"params\":{\"amount_\":\"token amount to unstake\"}}},\"version\":1},\"userdoc\":{\"events\":{\"StakeUpdated(address,uint256,uint256)\":{\"notice\":\"fires when stake state changes\"},\"UnStaked(address,uint256)\":{\"notice\":\"fires when unstake token\"}},\"kind\":\"user\",\"methods\":{\"cil()\":{\"notice\":\"cil token address\"},\"lockTime()\":{\"notice\":\"lock time - immutable 1 weeks\"},\"marketplace()\":{\"notice\":\"p2p marketplace contract address\"},\"multiSig()\":{\"notice\":\"multi sign wallet address of team\"},\"stakes(address)\":{\"notice\":\"active stakes for each user\"},\"totalStakedAmount()\":{\"notice\":\"total staked token amount\"}},\"notice\":\"cilistia staking contract\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/core/CILStaking.sol\":\"CILStaking\"},\"evmVersion\":\"london\",\"libraries\":{\":__CACHE_BREAKER__\":\"0x00000000d41867734bbee4c6863d9255b2b06ac1\"},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the amount of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the amount of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves `amount` tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Moves `amount` tokens from `from` to `to` using the\\n     * allowance mechanism. `amount` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(\\n        address from,\\n        address to,\\n        uint256 amount\\n    ) external returns (bool);\\n}\\n\",\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\"},\"contracts/core/CILStaking.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.9;\\n\\nimport {IERC20} from \\\"@openzeppelin/contracts/token/ERC20/IERC20.sol\\\";\\nimport {ICILStaking} from \\\"./interfaces/ICILStaking.sol\\\";\\n\\n/// @notice cilistia staking contract\\ncontract CILStaking is ICILStaking {\\n  /// @notice multi sign wallet address of team\\n  address public immutable multiSig;\\n  /// @notice cil token address\\n  address public immutable cil;\\n  /// @notice p2p marketplace contract address\\n  address public immutable marketplace;\\n\\n  struct Stake {\\n    uint256 tokenAmount; // amount of tokens locked in a stake\\n    uint256 lockedAmount; // amount of tokens locked in a stake\\n    uint256 stakedTime; // start time of locking\\n  }\\n\\n  /// @notice active stakes for each user\\n  mapping(address => Stake) public stakes;\\n  /// @notice active staker address list\\n  address[] private stakers;\\n\\n  /// @notice total staked token amount\\n  uint256 public totalStakedAmount;\\n\\n  /// @notice lock time - immutable 1 weeks\\n  uint256 public immutable lockTime = 1 weeks;\\n\\n  /**\\n   * @param cil_ cil token address\\n   * @param marketplace_ marketplace address\\n   * @param multiSig_ multi sign wallet address\\n   */\\n  constructor(\\n    address cil_,\\n    address marketplace_,\\n    address multiSig_\\n  ) {\\n    cil = cil_;\\n    marketplace = marketplace_;\\n    multiSig = multiSig_;\\n  }\\n\\n  /**\\n   * @dev stake token with amount\\n   * @param amount_ token amount to stake\\n   */\\n  function stake(uint256 amount_) external {\\n    Stake memory newStake = stakes[msg.sender];\\n    if (newStake.tokenAmount > 0) {\\n      newStake.tokenAmount += _collectedTokenAmount(msg.sender);\\n    } else {\\n      stakers.push(msg.sender);\\n    }\\n\\n    newStake.tokenAmount += amount_;\\n    totalStakedAmount += (newStake.tokenAmount - stakes[msg.sender].tokenAmount);\\n    newStake.stakedTime = block.timestamp;\\n\\n    stakes[msg.sender] = newStake;\\n\\n    IERC20(cil).transferFrom(msg.sender, address(this), amount_);\\n\\n    emit StakeUpdated(msg.sender, newStake.tokenAmount, newStake.lockedAmount);\\n  }\\n\\n  /**\\n   * @dev unstake staked token\\n   * @param amount_ token amount to unstake\\n   */\\n  function unStake(uint256 amount_) external {\\n    uint256 rewardAmount = _collectedTokenAmount(msg.sender);\\n\\n    Stake memory newStake = stakes[msg.sender];\\n    uint256 newTotalStakedAmount = totalStakedAmount;\\n\\n    uint256 withdrawAmount = amount_;\\n\\n    if (newStake.tokenAmount + rewardAmount < newStake.lockedAmount + amount_) {\\n      withdrawAmount = newStake.tokenAmount + rewardAmount - newStake.lockedAmount;\\n    }\\n\\n    newStake.tokenAmount += rewardAmount;\\n    newStake.tokenAmount -= withdrawAmount;\\n\\n    newTotalStakedAmount += rewardAmount;\\n    newTotalStakedAmount -= withdrawAmount;\\n\\n    if (newStake.tokenAmount == 0) {\\n      for (uint256 i = 0; i < stakers.length; i++) {\\n        if (stakers[i] == msg.sender) {\\n          stakers[i] = stakers[stakers.length - 1];\\n          stakers.pop();\\n        }\\n      }\\n    }\\n\\n    stakes[msg.sender] = newStake;\\n    totalStakedAmount = newTotalStakedAmount;\\n\\n    IERC20(cil).transfer(msg.sender, withdrawAmount);\\n\\n    emit UnStaked(msg.sender, withdrawAmount);\\n  }\\n\\n  /**\\n   * @dev return colleted token amount\\n   * @return collectedAmount total collected token amount\\n   */\\n  function collectedToken(address staker_) external view returns (uint256 collectedAmount) {\\n    collectedAmount = _collectedTokenAmount(staker_);\\n  }\\n\\n  /**\\n   * @dev return colleted token amount\\n   * @param staker_ staker address\\n   * @return stakingAmount lockable staking token amount\\n   */\\n  function lockableCil(address staker_) external view returns (uint256 stakingAmount) {\\n    stakingAmount = stakes[staker_].tokenAmount - stakes[staker_].lockedAmount;\\n  }\\n\\n  /**\\n   * @dev return colleted token amount\\n   * @param staker_ staker address\\n   * @return stakingAmount unlocked staking token amount\\n   */\\n  function lockedCil(address staker_) external view returns (uint256 stakingAmount) {\\n    stakingAmount = stakes[staker_].lockedAmount;\\n  }\\n\\n  /**\\n   * @dev lock staked token: called from marketplace contract\\n   * @param amount_ token amount to lock\\n   */\\n  function lock(address staker_, uint256 amount_) external {\\n    require(msg.sender == marketplace, \\\"CILStaking: forbidden\\\");\\n    require(stakes[staker_].tokenAmount >= amount_, \\\"CILStaking: insufficient staking amount\\\");\\n\\n    stakes[staker_].lockedAmount = amount_;\\n\\n    emit StakeUpdated(staker_, stakes[staker_].tokenAmount, amount_);\\n  }\\n\\n  /// @dev remove staking data\\n  function remove(address staker_) external {\\n    require(msg.sender == marketplace, \\\"CILStaking: forbidden\\\");\\n\\n    Stake memory newStake = stakes[staker_];\\n\\n    uint256 reward = _collectedTokenAmount(staker_) + newStake.stakedTime;\\n\\n    newStake.stakedTime = block.timestamp;\\n    newStake.tokenAmount = 0;\\n    newStake.lockedAmount = 0;\\n\\n    stakes[staker_] = newStake;\\n\\n    IERC20(cil).transfer(multiSig, reward);\\n\\n    emit StakeUpdated(staker_, 0, 0);\\n  }\\n\\n  /// @dev return total releasable token amount of staking contract\\n  function _totalReleasable() private view returns (uint256) {\\n    return IERC20(cil).balanceOf(address(this)) - totalStakedAmount;\\n  }\\n\\n  /// @dev return total stake point of staking contract stake point = amount * period\\n  function _totalStakePoint() private view returns (uint256 totalStakePoint) {\\n    totalStakePoint = 0;\\n    for (uint256 i = 0; i < stakers.length; i++) {\\n      totalStakePoint +=\\n        stakes[stakers[i]].tokenAmount *\\n        (block.timestamp - stakes[stakers[i]].stakedTime);\\n    }\\n  }\\n\\n  /// @dev get collected token amount\\n  function _collectedTokenAmount(address staker_) private view returns (uint256) {\\n    uint256 totalReleasable = _totalReleasable();\\n    uint256 totalStakePoint = _totalStakePoint();\\n    uint256 stakePoint = stakes[staker_].tokenAmount *\\n      (block.timestamp - stakes[staker_].stakedTime);\\n\\n    if (stakePoint == 0) {\\n      return 0;\\n    }\\n\\n    return (totalReleasable * stakePoint) / totalStakePoint;\\n  }\\n}\\n\",\"keccak256\":\"0xf3a508aa14bba8351947632fb327fd1633a2f4c5745b91b2ff8f34d7acb456af\",\"license\":\"AGPL-3.0\"},\"contracts/core/interfaces/ICILStaking.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.9;\\n\\n/// @notice cilistia staking contract interface\\ninterface ICILStaking {\\n  /// @notice fires when stake state changes\\n  event StakeUpdated(address staker, uint256 stakedAmount, uint256 lockedAmount);\\n\\n  /// @notice fires when unstake token\\n  event UnStaked(address staker, uint256 rewardAmount);\\n\\n  /// @dev unstake staked token\\n  function lock(address staker_, uint256 amount_) external;\\n\\n  /// @dev remove staking data\\n  function remove(address staker_) external;\\n\\n  /// @dev return colleted token amount\\n  function collectedToken(address staker) external view returns (uint256);\\n\\n  /// @dev return lockable token amount\\n  function lockableCil(address staker) external view returns (uint256);\\n\\n  /// @dev return locked token amount\\n  function lockedCil(address staker) external view returns (uint256);\\n}\\n\",\"keccak256\":\"0xc1652393713f821a7b12c3fe82cb2eb79958a8bb01141e70b8a97bf95e6451ec\",\"license\":\"AGPL-3.0\"}},\"version\":1}",
+  "bytecode": "0x61010060405262093a8060e05234801561001857600080fd5b50604051610fdc380380610fdc83398101604081905261003791610070565b6001600160a01b0392831660a05290821660c052166080526100b3565b80516001600160a01b038116811461006b57600080fd5b919050565b60008060006060848603121561008557600080fd5b61008e84610054565b925061009c60208501610054565b91506100aa60408501610054565b90509250925092565b60805160a05160c05160e051610ec061011c600039600060d90152600081816102320152818161029901526103e80152600081816102590152818161051b0152818161081a01528181610a160152610bbb01526000818161018501526104e90152610ec06000f3fe608060405234801561001057600080fd5b50600436106100cf5760003560e01c8063491eda181161008c578063a694fc3a11610066578063a694fc3a1461021a578063abc8c7af1461022d578063b2c7763814610254578063ee88a30e1461027b57600080fd5b8063491eda18146101d2578063567e98f9146101fe5780635d3eea911461020757600080fd5b80630d668087146100d457806316934fc41461010e578063282d3fdf1461015857806329092d0e1461016d57806336e0004a146101805780634506164b146101bf575b600080fd5b6100fb7f000000000000000000000000000000000000000000000000000000000000000081565b6040519081526020015b60405180910390f35b61013d61011c366004610d1d565b60006020819052908152604090208054600182015460029092015490919083565b60408051938452602084019290925290820152606001610105565b61016b610166366004610d3f565b61028e565b005b61016b61017b366004610d1d565b6103dd565b6101a77f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610105565b6100fb6101cd366004610d1d565b6105e6565b6100fb6101e0366004610d1d565b6001600160a01b031660009081526020819052604090206001015490565b6100fb60025481565b61016b610215366004610d69565b6105f7565b61016b610228366004610d69565b6108d7565b6101a77f000000000000000000000000000000000000000000000000000000000000000081565b6101a77f000000000000000000000000000000000000000000000000000000000000000081565b6100fb610289366004610d1d565b610ada565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146103035760405162461bcd60e51b815260206004820152601560248201527421a4a629ba30b5b4b7339d103337b93134b23232b760591b60448201526064015b60405180910390fd5b6001600160a01b03821660009081526020819052604090205481111561037b5760405162461bcd60e51b815260206004820152602760248201527f43494c5374616b696e673a20696e73756666696369656e74207374616b696e6760448201526608185b5bdd5b9d60ca1b60648201526084016102fa565b6001600160a01b03821660008181526020818152604091829020600181018590555482519384529083015281018290527ff3ee618df6e6ff5a26ef25cf1ba9bc24b56492f5ff29acf2815121a2b903138a906060015b60405180910390a15050565b336001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000161461044d5760405162461bcd60e51b815260206004820152601560248201527421a4a629ba30b5b4b7339d103337b93134b23232b760591b60448201526064016102fa565b6001600160a01b0381166000908152602081815260408083208151606081018352815481526001820154938101939093526002015490820181905290919061049484610b03565b61049e9190610d98565b426040848101918252600080865260208087018281526001600160a01b0389811684529183905291839020875181559151600183015592516002909101555163a9059cbb60e01b81527f000000000000000000000000000000000000000000000000000000000000000082166004820152602481018390529192507f0000000000000000000000000000000000000000000000000000000000000000169063a9059cbb90604401602060405180830381600087803b15801561055f57600080fd5b505af1158015610573573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105979190610db0565b50604080516001600160a01b03851681526000602082018190528183015290517ff3ee618df6e6ff5a26ef25cf1ba9bc24b56492f5ff29acf2815121a2b903138a9181900360600190a1505050565b60006105f182610b03565b92915050565b600061060233610b03565b336000908152602081815260409182902082516060810184528154815260018201549281018390526002918201549381019390935254929350909190849061064b908290610d98565b8351610658908690610d98565b101561067d5760208301518351610670908690610d98565b61067a9190610dd2565b90505b838360000181815161068f9190610d98565b9052508251819084906106a3908390610dd2565b9052506106b08483610d98565b91506106bc8183610dd2565b83519092506107cb5760005b6001548110156107c957336001600160a01b0316600182815481106106ef576106ef610de9565b6000918252602090912001546001600160a01b031614156107b75760018054610719908290610dd2565b8154811061072957610729610de9565b600091825260209091200154600180546001600160a01b03909216918390811061075557610755610de9565b9060005260206000200160006101000a8154816001600160a01b0302191690836001600160a01b03160217905550600180548061079457610794610dff565b600082815260209020810160001990810180546001600160a01b03191690550190555b806107c181610e15565b9150506106c8565b505b336000818152602081815260409182902086518155908601516001820155858201516002918201558490555163a9059cbb60e01b81526004810191909152602481018290526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063a9059cbb90604401602060405180830381600087803b15801561085e57600080fd5b505af1158015610872573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108969190610db0565b5060408051338152602081018390527f79d3df6837cc49ff0e09fd3258e6e45594e0703445bb06825e9d75156eaee8f0910160405180910390a15050505050565b33600090815260208181526040918290208251606081018452815480825260018301549382019390935260029091015492810192909252156109335761091c33610b03565b8151829061092b908390610d98565b905250610975565b6001805480820182556000919091527fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf60180546001600160a01b031916331790555b81816000018181516109879190610d98565b9052503360009081526020819052604090205481516109a69190610dd2565b600260008282546109b79190610d98565b9091555050426040828101918252336000818152602081815290839020855181559085015160018201559251600290930192909255516323b872dd60e01b81526004810191909152306024820152604481018390526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906323b872dd90606401602060405180830381600087803b158015610a5a57600080fd5b505af1158015610a6e573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a929190610db0565b5080516020808301516040805133815292830193909352918101919091527ff3ee618df6e6ff5a26ef25cf1ba9bc24b56492f5ff29acf2815121a2b903138a906060016103d1565b6001600160a01b0381166000908152602081905260408120600181015490546105f19190610dd2565b600080610b0e610b97565b90506000610b1a610c44565b6001600160a01b03851660009081526020819052604081206002015491925090610b449042610dd2565b6001600160a01b038616600090815260208190526040902054610b679190610e30565b905080610b7957506000949350505050565b81610b848285610e30565b610b8e9190610e4f565b95945050505050565b6002546040516370a0823160e01b8152306004820152600091906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906370a082319060240160206040518083038186803b158015610bfd57600080fd5b505afa158015610c11573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610c359190610e71565b610c3f9190610dd2565b905090565b6000805b600154811015610cfd5760008060018381548110610c6857610c68610de9565b60009182526020808320909101546001600160a01b03168352820192909252604001902060020154610c9a9042610dd2565b60008060018481548110610cb057610cb0610de9565b60009182526020808320909101546001600160a01b03168352820192909252604001902054610cdf9190610e30565b610ce99083610d98565b915080610cf581610e15565b915050610c48565b5090565b80356001600160a01b0381168114610d1857600080fd5b919050565b600060208284031215610d2f57600080fd5b610d3882610d01565b9392505050565b60008060408385031215610d5257600080fd5b610d5b83610d01565b946020939093013593505050565b600060208284031215610d7b57600080fd5b5035919050565b634e487b7160e01b600052601160045260246000fd5b60008219821115610dab57610dab610d82565b500190565b600060208284031215610dc257600080fd5b81518015158114610d3857600080fd5b600082821015610de457610de4610d82565b500390565b634e487b7160e01b600052603260045260246000fd5b634e487b7160e01b600052603160045260246000fd5b6000600019821415610e2957610e29610d82565b5060010190565b6000816000190483118215151615610e4a57610e4a610d82565b500290565b600082610e6c57634e487b7160e01b600052601260045260246000fd5b500490565b600060208284031215610e8357600080fd5b505191905056fea26469706673582212204f1922c5f9dbaa6749c0ca0afab046c1cb561c6c212f4ec1858113c03d4cf83764736f6c63430008090033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100cf5760003560e01c8063491eda181161008c578063a694fc3a11610066578063a694fc3a1461021a578063abc8c7af1461022d578063b2c7763814610254578063ee88a30e1461027b57600080fd5b8063491eda18146101d2578063567e98f9146101fe5780635d3eea911461020757600080fd5b80630d668087146100d457806316934fc41461010e578063282d3fdf1461015857806329092d0e1461016d57806336e0004a146101805780634506164b146101bf575b600080fd5b6100fb7f000000000000000000000000000000000000000000000000000000000000000081565b6040519081526020015b60405180910390f35b61013d61011c366004610d1d565b60006020819052908152604090208054600182015460029092015490919083565b60408051938452602084019290925290820152606001610105565b61016b610166366004610d3f565b61028e565b005b61016b61017b366004610d1d565b6103dd565b6101a77f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610105565b6100fb6101cd366004610d1d565b6105e6565b6100fb6101e0366004610d1d565b6001600160a01b031660009081526020819052604090206001015490565b6100fb60025481565b61016b610215366004610d69565b6105f7565b61016b610228366004610d69565b6108d7565b6101a77f000000000000000000000000000000000000000000000000000000000000000081565b6101a77f000000000000000000000000000000000000000000000000000000000000000081565b6100fb610289366004610d1d565b610ada565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146103035760405162461bcd60e51b815260206004820152601560248201527421a4a629ba30b5b4b7339d103337b93134b23232b760591b60448201526064015b60405180910390fd5b6001600160a01b03821660009081526020819052604090205481111561037b5760405162461bcd60e51b815260206004820152602760248201527f43494c5374616b696e673a20696e73756666696369656e74207374616b696e6760448201526608185b5bdd5b9d60ca1b60648201526084016102fa565b6001600160a01b03821660008181526020818152604091829020600181018590555482519384529083015281018290527ff3ee618df6e6ff5a26ef25cf1ba9bc24b56492f5ff29acf2815121a2b903138a906060015b60405180910390a15050565b336001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000161461044d5760405162461bcd60e51b815260206004820152601560248201527421a4a629ba30b5b4b7339d103337b93134b23232b760591b60448201526064016102fa565b6001600160a01b0381166000908152602081815260408083208151606081018352815481526001820154938101939093526002015490820181905290919061049484610b03565b61049e9190610d98565b426040848101918252600080865260208087018281526001600160a01b0389811684529183905291839020875181559151600183015592516002909101555163a9059cbb60e01b81527f000000000000000000000000000000000000000000000000000000000000000082166004820152602481018390529192507f0000000000000000000000000000000000000000000000000000000000000000169063a9059cbb90604401602060405180830381600087803b15801561055f57600080fd5b505af1158015610573573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105979190610db0565b50604080516001600160a01b03851681526000602082018190528183015290517ff3ee618df6e6ff5a26ef25cf1ba9bc24b56492f5ff29acf2815121a2b903138a9181900360600190a1505050565b60006105f182610b03565b92915050565b600061060233610b03565b336000908152602081815260409182902082516060810184528154815260018201549281018390526002918201549381019390935254929350909190849061064b908290610d98565b8351610658908690610d98565b101561067d5760208301518351610670908690610d98565b61067a9190610dd2565b90505b838360000181815161068f9190610d98565b9052508251819084906106a3908390610dd2565b9052506106b08483610d98565b91506106bc8183610dd2565b83519092506107cb5760005b6001548110156107c957336001600160a01b0316600182815481106106ef576106ef610de9565b6000918252602090912001546001600160a01b031614156107b75760018054610719908290610dd2565b8154811061072957610729610de9565b600091825260209091200154600180546001600160a01b03909216918390811061075557610755610de9565b9060005260206000200160006101000a8154816001600160a01b0302191690836001600160a01b03160217905550600180548061079457610794610dff565b600082815260209020810160001990810180546001600160a01b03191690550190555b806107c181610e15565b9150506106c8565b505b336000818152602081815260409182902086518155908601516001820155858201516002918201558490555163a9059cbb60e01b81526004810191909152602481018290526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063a9059cbb90604401602060405180830381600087803b15801561085e57600080fd5b505af1158015610872573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108969190610db0565b5060408051338152602081018390527f79d3df6837cc49ff0e09fd3258e6e45594e0703445bb06825e9d75156eaee8f0910160405180910390a15050505050565b33600090815260208181526040918290208251606081018452815480825260018301549382019390935260029091015492810192909252156109335761091c33610b03565b8151829061092b908390610d98565b905250610975565b6001805480820182556000919091527fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf60180546001600160a01b031916331790555b81816000018181516109879190610d98565b9052503360009081526020819052604090205481516109a69190610dd2565b600260008282546109b79190610d98565b9091555050426040828101918252336000818152602081815290839020855181559085015160018201559251600290930192909255516323b872dd60e01b81526004810191909152306024820152604481018390526001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906323b872dd90606401602060405180830381600087803b158015610a5a57600080fd5b505af1158015610a6e573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610a929190610db0565b5080516020808301516040805133815292830193909352918101919091527ff3ee618df6e6ff5a26ef25cf1ba9bc24b56492f5ff29acf2815121a2b903138a906060016103d1565b6001600160a01b0381166000908152602081905260408120600181015490546105f19190610dd2565b600080610b0e610b97565b90506000610b1a610c44565b6001600160a01b03851660009081526020819052604081206002015491925090610b449042610dd2565b6001600160a01b038616600090815260208190526040902054610b679190610e30565b905080610b7957506000949350505050565b81610b848285610e30565b610b8e9190610e4f565b95945050505050565b6002546040516370a0823160e01b8152306004820152600091906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906370a082319060240160206040518083038186803b158015610bfd57600080fd5b505afa158015610c11573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610c359190610e71565b610c3f9190610dd2565b905090565b6000805b600154811015610cfd5760008060018381548110610c6857610c68610de9565b60009182526020808320909101546001600160a01b03168352820192909252604001902060020154610c9a9042610dd2565b60008060018481548110610cb057610cb0610de9565b60009182526020808320909101546001600160a01b03168352820192909252604001902054610cdf9190610e30565b610ce99083610d98565b915080610cf581610e15565b915050610c48565b5090565b80356001600160a01b0381168114610d1857600080fd5b919050565b600060208284031215610d2f57600080fd5b610d3882610d01565b9392505050565b60008060408385031215610d5257600080fd5b610d5b83610d01565b946020939093013593505050565b600060208284031215610d7b57600080fd5b5035919050565b634e487b7160e01b600052601160045260246000fd5b60008219821115610dab57610dab610d82565b500190565b600060208284031215610dc257600080fd5b81518015158114610d3857600080fd5b600082821015610de457610de4610d82565b500390565b634e487b7160e01b600052603260045260246000fd5b634e487b7160e01b600052603160045260246000fd5b6000600019821415610e2957610e29610d82565b5060010190565b6000816000190483118215151615610e4a57610e4a610d82565b500290565b600082610e6c57634e487b7160e01b600052601260045260246000fd5b500490565b600060208284031215610e8357600080fd5b505191905056fea26469706673582212204f1922c5f9dbaa6749c0ca0afab046c1cb561c6c212f4ec1858113c03d4cf83764736f6c63430008090033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "collectedToken(address)": {
+        "details": "return colleted token amount",
+        "returns": {
+          "collectedAmount": "total collected token amount"
+        }
+      },
+      "constructor": {
+        "params": {
+          "cil_": "cil token address",
+          "marketplace_": "marketplace address",
+          "multiSig_": "multi sign wallet address"
+        }
+      },
+      "lock(address,uint256)": {
+        "details": "lock staked token: called from marketplace contract",
+        "params": {
+          "amount_": "token amount to lock"
+        }
+      },
+      "lockableCil(address)": {
+        "details": "return colleted token amount",
+        "params": {
+          "staker_": "staker address"
+        },
+        "returns": {
+          "stakingAmount": "lockable staking token amount"
+        }
+      },
+      "lockedCil(address)": {
+        "details": "return colleted token amount",
+        "params": {
+          "staker_": "staker address"
+        },
+        "returns": {
+          "stakingAmount": "unlocked staking token amount"
+        }
+      },
+      "remove(address)": {
+        "details": "remove staking data"
+      },
+      "stake(uint256)": {
+        "details": "stake token with amount",
+        "params": {
+          "amount_": "token amount to stake"
+        }
+      },
+      "unStake(uint256)": {
+        "details": "unstake staked token",
+        "params": {
+          "amount_": "token amount to unstake"
+        }
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "events": {
+      "StakeUpdated(address,uint256,uint256)": {
+        "notice": "fires when stake state changes"
+      },
+      "UnStaked(address,uint256)": {
+        "notice": "fires when unstake token"
+      }
+    },
+    "kind": "user",
+    "methods": {
+      "cil()": {
+        "notice": "cil token address"
+      },
+      "lockTime()": {
+        "notice": "lock time - immutable 1 weeks"
+      },
+      "marketplace()": {
+        "notice": "p2p marketplace contract address"
+      },
+      "multiSig()": {
+        "notice": "multi sign wallet address of team"
+      },
+      "stakes(address)": {
+        "notice": "active stakes for each user"
+      },
+      "totalStakedAmount()": {
+        "notice": "total staked token amount"
+      }
+    },
+    "notice": "cilistia staking contract",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 4001,
+        "contract": "contracts/core/CILStaking.sol:CILStaking",
+        "label": "stakes",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_address,t_struct(Stake)3995_storage)"
+      },
+      {
+        "astId": 4005,
+        "contract": "contracts/core/CILStaking.sol:CILStaking",
+        "label": "stakers",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 4008,
+        "contract": "contracts/core/CILStaking.sol:CILStaking",
+        "label": "totalStakedAmount",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "base": "t_address",
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_struct(Stake)3995_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct CILStaking.Stake)",
+        "numberOfBytes": "32",
+        "value": "t_struct(Stake)3995_storage"
+      },
+      "t_struct(Stake)3995_storage": {
+        "encoding": "inplace",
+        "label": "struct CILStaking.Stake",
+        "members": [
+          {
+            "astId": 3990,
+            "contract": "contracts/core/CILStaking.sol:CILStaking",
+            "label": "tokenAmount",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 3992,
+            "contract": "contracts/core/CILStaking.sol:CILStaking",
+            "label": "lockedAmount",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 3994,
+            "contract": "contracts/core/CILStaking.sol:CILStaking",
+            "label": "stakedTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          }
+        ],
+        "numberOfBytes": "96"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

@@ -78,16 +78,17 @@ contract CILStaking is ICILStaking {
     Stake memory newStake = stakes[msg.sender];
     uint256 newTotalStakedAmount = totalStakedAmount;
 
-    require(
-      newStake.tokenAmount + rewardAmount > newStake.lockedAmount + amount_,
-      "CILStaking: insufficient unstake amount"
-    );
+    uint256 withdrawAmount = amount_;
+
+    if (newStake.tokenAmount + rewardAmount < newStake.lockedAmount + amount_) {
+      withdrawAmount = newStake.tokenAmount + rewardAmount - newStake.lockedAmount;
+    }
 
     newStake.tokenAmount += rewardAmount;
-    newStake.tokenAmount -= amount_;
+    newStake.tokenAmount -= withdrawAmount;
 
     newTotalStakedAmount += rewardAmount;
-    newTotalStakedAmount -= amount_;
+    newTotalStakedAmount -= withdrawAmount;
 
     if (newStake.tokenAmount == 0) {
       for (uint256 i = 0; i < stakers.length; i++) {
@@ -101,9 +102,9 @@ contract CILStaking is ICILStaking {
     stakes[msg.sender] = newStake;
     totalStakedAmount = newTotalStakedAmount;
 
-    IERC20(cil).transfer(msg.sender, amount_);
+    IERC20(cil).transfer(msg.sender, withdrawAmount);
 
-    emit UnStaked(msg.sender, amount_);
+    emit UnStaked(msg.sender, withdrawAmount);
   }
 
   /**
@@ -129,7 +130,7 @@ contract CILStaking is ICILStaking {
    * @return stakingAmount unlocked staking token amount
    */
   function lockedCil(address staker_) external view returns (uint256 stakingAmount) {
-    stakingAmount = stakes[staker_].tokenAmount - stakes[staker_].lockedAmount;
+    stakingAmount = stakes[staker_].lockedAmount;
   }
 
   /**
@@ -156,6 +157,8 @@ contract CILStaking is ICILStaking {
     newStake.stakedTime = block.timestamp;
     newStake.tokenAmount = 0;
     newStake.lockedAmount = 0;
+
+    stakes[staker_] = newStake;
 
     IERC20(cil).transfer(multiSig, reward);
 

@@ -9,6 +9,8 @@ import {IUniswapV2Pair} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pa
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {ICILStaking} from "./interfaces/ICILStaking.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Cilistia P2P MarketPlace
  * @notice cilistia MarketPlace contract
@@ -18,16 +20,26 @@ import {ICILStaking} from "./interfaces/ICILStaking.sol";
 contract MarketPlace is Ownable {
   using SafeERC20 for IERC20;
 
-  struct Position {
-    bool priceType; // 0 => fixed, 1 => percent
+  struct PositionCreateParam {
     uint128 price;
+    uint128 amount;
+    uint128 minAmount;
+    uint128 maxAmount;
+    bool priceType; // 0 => fixed, 1 => percent
+    uint8 paymentMethod; // 0 => BankTransfer, 1 => Other
+    address token;
+  }
+
+  struct Position {
+    uint128 price;
+    uint128 amount;
+    uint128 minAmount;
+    uint128 maxAmount;
+    uint128 offerredAmount;
+    bool priceType; // 0 => fixed, 1 => percent
     uint8 paymentMethod; // 0 => BankTransfer, 1 => Other
     address token;
     address creator;
-    uint128 amount;
-    uint128 offerredAmount;
-    uint128 minAmount;
-    uint128 maxAmount;
   }
 
   struct Offer {
@@ -44,7 +56,7 @@ contract MarketPlace is Ownable {
   /// @notice cil address
   address public immutable cil;
   /// @notice uniswap router address
-  address public immutable cilPair;
+  address public cilPair;
   /// @notice cil staking address
   address public cilStaking;
   /// @notice chainlink pricefeeds (address => address)
@@ -63,14 +75,14 @@ contract MarketPlace is Ownable {
   /// @notice fires when create position
   event PositionCreated(
     bytes32 key,
-    bool priceType,
     uint128 price,
-    uint8 paymentMethod,
-    address indexed token,
-    address indexed creator,
     uint128 amount,
     uint128 minAmount,
     uint128 maxAmount,
+    bool priceType,
+    uint8 paymentMethod,
+    address indexed token,
+    address indexed creator,
     string terms
   );
 
@@ -91,25 +103,11 @@ contract MarketPlace is Ownable {
 
   /**
    * @param cil_ cilistia token address
-   * @param cilPair_ address of cil/eth pair
-   * @param ethPricefeed_ weth pricefeed contract address
    * @param multiSig_ multi sign wallet address
    */
-  constructor(
-    address cil_,
-    address cilPair_,
-    address ethPricefeed_,
-    address multiSig_
-  ) {
+  constructor(address cil_, address multiSig_) {
     cil = cil_;
-    cilPair = cilPair_;
     multiSig = multiSig_;
-
-    bool isFirst = IUniswapV2Pair(cilPair).token0() == cil;
-    pricefeeds[address(0)] = ethPricefeed_;
-    pricefeeds[
-      isFirst ? IUniswapV2Pair(cilPair).token1() : IUniswapV2Pair(cilPair).token0()
-    ] = ethPricefeed_;
   }
 
   modifier initialized() {
@@ -118,12 +116,14 @@ contract MarketPlace is Ownable {
   }
 
   modifier whitelisted(address token) {
-    require(pricefeeds[token] != address(0), "MarketPlace: token not whitelisted");
+    if (token != cil) {
+      require(pricefeeds[token] != address(0), "MarketPlace: token not whitelisted");
+    }
     _;
   }
 
   modifier noBlocked() {
-    require(isBlocked[msg.sender], "MarketPlace: blocked address");
+    require(!isBlocked[msg.sender], "MarketPlace: blocked address");
     _;
   }
 
@@ -208,62 +208,55 @@ contract MarketPlace is Ownable {
 
   /**
    * @dev create position
-   * @param paymentMethod payment methd
-   * @param token token address
-   * @param amount token amount
-   * @param minAmount token min amount
-   * @param maxAmount token max amount
+   * @param params position create params
    * @param terms terms of position
    */
-  function createPosition(
-    bool priceType,
-    uint128 price,
-    uint8 paymentMethod,
-    address token,
-    uint128 amount,
-    uint128 minAmount,
-    uint128 maxAmount,
-    string memory terms
-  ) external payable initialized whitelisted(token) noBlocked {
+  function createPosition(PositionCreateParam memory params, string memory terms)
+    external
+    payable
+    initialized
+    whitelisted(params.token)
+    noBlocked
+  {
     bytes32 key = getPositionKey(
-      paymentMethod,
-      price,
-      token,
+      params.paymentMethod,
+      params.price,
+      params.token,
       msg.sender,
-      amount,
-      minAmount,
-      maxAmount,
+      params.amount,
+      params.minAmount,
+      params.maxAmount,
       block.timestamp
     );
 
     positions[key] = Position(
-      priceType,
-      price,
-      paymentMethod,
-      token,
-      msg.sender,
-      amount,
-      minAmount,
-      maxAmount,
-      0
+      params.price,
+      params.amount,
+      params.minAmount,
+      params.maxAmount,
+      0,
+      params.priceType,
+      params.paymentMethod,
+      params.token,
+      msg.sender
     );
 
-    if (token == address(0)) {
-      require(amount == msg.value, "MarketPlace: invalid eth amount");
+    if (params.token == address(0)) {
+      require(params.amount == msg.value, "MarketPlace: invalid eth amount");
     } else {
-      IERC20(token).transferFrom(msg.sender, address(this), amount);
+      IERC20(params.token).transferFrom(msg.sender, address(this), params.amount);
     }
 
     emit PositionCreated(
       key,
-      priceType,
-      price,
-      paymentMethod,
-      token,
+      params.price,
+      params.amount,
+      params.minAmount,
+      params.maxAmount,
+      params.priceType,
+      params.paymentMethod,
+      params.token,
       msg.sender,
-      amount,
-      minAmount,
-      maxAmount,
       terms
     );
   }
@@ -274,6 +267,7 @@ contract MarketPlace is Ownable {
    * @param amount amount to increase
    */
   function increasePosition(bytes32 key, uint128 amount) external payable initialized noBlocked {
+    require(positions[key].creator != address(0), "MarketPlace: not exist such position");
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
 
     positions[key].amount += amount;
@@ -293,6 +287,7 @@ contract MarketPlace is Ownable {
    * @param amount amount to increase
    */
   function decreasePosition(bytes32 key, uint128 amount) external initialized noBlocked {
+    require(positions[key].creator != address(0), "MarketPlace: not exist such position");
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
     require(
       positions[key].amount >= positions[key].offerredAmount + amount,
@@ -322,6 +317,8 @@ contract MarketPlace is Ownable {
     string memory terms
   ) external initialized noBlocked {
     require(positions[positionKey].creator != address(0), "MarketPlace: such position don't exist");
+
+    require(positions[positionKey].minAmount <= amount, "MarketPlace: amount less than min");
     require(positions[positionKey].maxAmount >= amount, "MarketPlace: amount exceed max");
 
     uint256 lockableCil = getStakedCil(positions[positionKey].creator);
@@ -334,9 +331,9 @@ contract MarketPlace is Ownable {
       decimals = IERC20Metadata(positions[positionKey].token).decimals();
     }
 
-    if (!positions[positionKey].priceType) {
+    if (positions[positionKey].priceType) {
       if (positions[positionKey].token == cil) {
-        price = (getCilPrice() * 10000) / positions[positionKey].price;
+        price = (getCilPrice() * positions[positionKey].price) / 10000;
       } else {
         price =
           (getTokenPrice(positions[positionKey].token) * positions[positionKey].price) /
@@ -365,8 +362,8 @@ contract MarketPlace is Ownable {
    * @param key key of offer
    */
   function cancelOffer(bytes32 key) external noBlocked {
-    require(offers[key].creator == msg.sender, "MerketPlace: you aren't creator of this offer");
-    require(!offers[key].released && !offers[key].canceled, "MerketPlace: offer already finished");
+    require(offers[key].creator == msg.sender, "MarketPlace: you aren't creator of this offer");
+    require(!offers[key].released && !offers[key].canceled, "MarketPlace: offer already finished");
 
     offers[key].canceled = true;
     positions[offers[key].positionKey].offerredAmount -= offers[key].amount;
@@ -382,11 +379,13 @@ contract MarketPlace is Ownable {
     bytes32 positionKey = offers[key].positionKey;
     require(
       positions[positionKey].creator == msg.sender,
-      "MerketPlace: you aren't creator of this position"
+      "MarketPlace: you aren't creator of this position"
     );
-    require(!offers[key].released && !offers[key].canceled, "MerketPlace: offer already finished");
+    require(!offers[key].released && !offers[key].canceled, "MarketPlace: offer already finished");
 
     offers[key].released = true;
+    positions[positionKey].amount -= offers[key].amount;
+    positions[positionKey].offerredAmount -= offers[key].amount;
 
     uint256 fee = (offers[key].amount * feePoint) / 10000;
     if (positions[positionKey].token == address(0)) {
@@ -403,9 +402,22 @@ contract MarketPlace is Ownable {
   /**
    * @dev set staking contract address
    * @param cilStaking_ staking contract address
+   * @param cilPair_ address of cil/eth pair
+   * @param ethPricefeed_ weth pricefeed contract address
    */
-  function init(address cilStaking_) external onlyOwner {
+  function init(
+    address cilStaking_,
+    address cilPair_,
+    address ethPricefeed_
+  ) external onlyOwner {
     cilStaking = cilStaking_;
+    cilPair = cilPair_;
+
+    bool isFirst = IUniswapV2Pair(cilPair).token0() == cil;
+    pricefeeds[address(0)] = ethPricefeed_;
+    pricefeeds[
+      isFirst ? IUniswapV2Pair(cilPair).token1() : IUniswapV2Pair(cilPair).token0()
+    ] = ethPricefeed_;
   }
 
   /**
@@ -422,7 +434,7 @@ contract MarketPlace is Ownable {
    * @param key key of offer
    */
   function forceCancelOffer(bytes32 key) external onlyOwner {
-    require(!offers[key].released && !offers[key].canceled, "MerketPlace: offer already finished");
+    require(!offers[key].released && !offers[key].canceled, "MarketPlace: offer already finished");
 
     offers[key].canceled = true;
     positions[offers[key].positionKey].offerredAmount -= offers[key].amount;

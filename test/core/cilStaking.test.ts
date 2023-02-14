@@ -56,8 +56,8 @@ describe("Cil staking contract test", () => {
 
     await time.increase(24 * 60 * 60);
 
-    expect(await cilStaking.stakedToken(alice.address)).to.eq(parseEther("10"));
-    expect(await cilStaking.stakedToken(bob.address)).to.eq(parseEther("5"));
+    expect(await cilStaking.lockableCil(alice.address)).to.eq(parseEther("10"));
+    expect(await cilStaking.lockableCil(bob.address)).to.eq(parseEther("5"));
     expect(await cilStaking.collectedToken(alice.address)).eq(0);
     expect(await cilStaking.collectedToken(bob.address)).eq(0);
   });
@@ -80,18 +80,20 @@ describe("Cil staking contract test", () => {
     const bobReward = await cilStaking.collectedToken(bob.address);
     await expect(cilStaking.connect(bob).stake(parseEther("5"))).to.emit(cilStaking, "StakeUpdated");
 
-    expect(await cilStaking.stakedToken(bob.address)).to.gt(parseEther("10").add(bobReward));
+    expect(await cilStaking.lockableCil(bob.address)).to.gt(parseEther("10").add(bobReward));
   });
 
   it("user can't unStake in lock time", async () => {
-    await expect(cilStaking.connect(alice).unStake()).to.revertedWith(
-      "CILStaking: can't unStake during lock time",
+    const aliceStakedAmount = (await cilStaking.lockableCil(alice.address)).add(
+      await cilStaking.collectedToken(alice.address),
     );
+    await expect(cilStaking.connect(alice).unStake(aliceStakedAmount)).to.emit(cilStaking, "UnStaked");
 
-    await time.increase(7 * 24 * 60 * 60);
+    const bobStakedAmount = (await cilStaking.lockableCil(bob.address)).add(
+      await cilStaking.collectedToken(bob.address),
+    );
+    await expect(cilStaking.connect(bob).unStake(bobStakedAmount)).to.emit(cilStaking, "UnStaked");
 
-    await expect(cilStaking.connect(alice).unStake()).to.emit(cilStaking, "UnStaked");
-    await expect(cilStaking.connect(bob).unStake()).to.emit(cilStaking, "UnStaked");
     expect(await cil.balanceOf(cilStaking.address)).to.eq(0);
   });
 });

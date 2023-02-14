@@ -7,10 +7,13 @@ import {
   CILStaking__factory,
   CIL__factory,
   LiquidityExtension__factory,
+  MarketPlace__factory,
   MockERC20,
 } from "../types";
 import { Ship } from "../utils";
 import { contracts } from "../config/constants";
+import { MarketPlace } from "./../types/contracts/core/MarketPlace";
+import { constants } from "ethers";
 
 const func: DeployFunction = async (hre) => {
   const { deploy, connect, accounts } = await Ship.init(hre);
@@ -19,6 +22,7 @@ const func: DeployFunction = async (hre) => {
   let usdtAddress = contracts[network]?.USDT;
   let usdcAddress = contracts[network]?.USDC;
   const uniswapRouterAddress = contracts[network].uniswapRouter;
+  const nativeTokenFeed = contracts[network].priceFeeds.nativeToken;
 
   let signer = process.env.CIL_SIGNER as string;
   let multiSig = process.env.CIL_MULTISIG as string;
@@ -61,6 +65,13 @@ const func: DeployFunction = async (hre) => {
       liquidityExtension.address,
     );
     console.info("Initialized cil token on", tx.hash);
+    await tx.wait();
+  }
+
+  const marketPlace = await connect(MarketPlace__factory);
+  if ((await marketPlace.cilStaking()) == constants.AddressZero) {
+    const tx = await marketPlace.init(cilStaking.address, await cil.pool(), nativeTokenFeed);
+    console.log("Initialize marketplace at", tx.hash);
     await tx.wait();
   }
 };

@@ -198,12 +198,12 @@ contract MarketPlace is Ownable {
 
   /**
    * @dev get staking amount with eth
-   * @param address_ wallet address
+   * @param user wallet address
    * @return totalAmount amount of staked cil with usd
    */
-  function getStakedCil(address address_) public view returns (uint256 totalAmount) {
+  function getStakedCil(address user) public view returns (uint256 totalAmount) {
     uint256 cilPrice = getCilPrice();
-    totalAmount = (ICILStaking(cilStaking).lockableCil(address_) * cilPrice) / 1e18;
+    totalAmount = (ICILStaking(cilStaking).lockableCil(user) * cilPrice) / 1e18;
   }
 
   /**

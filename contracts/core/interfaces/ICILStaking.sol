@@ -4,23 +4,23 @@ pragma solidity ^0.8.9;
 /// @notice cilistia staking contract interface
 interface ICILStaking {
   /// @notice fires when stake state changes
-  event StakeUpdated(address staker, uint256 stakedAmount, uint256 lockedAmount);
+  event StakeUpdated(address user, uint256 stakedAmount, uint256 lockedAmount);
 
   /// @notice fires when unstake token
-  event UnStaked(address staker, uint256 rewardAmount);
+  event UnStaked(address user, uint256 rewardAmount);
 
   /// @dev unstake staked token
-  function lock(address staker_, uint256 amount_) external;
+  function lock(address user, uint256 amount) external;
 
   /// @dev remove staking data
-  function remove(address staker_) external;
+  function remove(address user) external;
 
   /// @dev return colleted token amount
-  function collectedToken(address staker) external view returns (uint256);
+  function collectedToken(address user) external view returns (uint256);
 
   /// @dev return lockable token amount
-  function lockableCil(address staker) external view returns (uint256);
+  function lockableCil(address user) external view returns (uint256);
 
   /// @dev return locked token amount
-  function lockedCil(address staker) external view returns (uint256);
+  function lockedCil(address user) external view returns (uint256);
 }

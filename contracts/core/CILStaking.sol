@@ -21,8 +21,8 @@ contract CILStaking is ICILStaking {
 
   /// @notice active stakes for each user
   mapping(address => Stake) public stakes;
-  /// @notice active staker address list
-  address[] private stakers;
+  /// @notice active user address list
+  address[] private users;
 
   /// @notice total staked token amount
   uint256 public totalStakedAmount;
@@ -47,40 +47,40 @@ contract CILStaking is ICILStaking {
 
   /**
    * @dev stake token with amount
-   * @param amount_ token amount to stake
+   * @param amount token amount to stake
    */
-  function stake(uint256 amount_) external {
+  function stake(uint256 amount) external {
     Stake memory newStake = stakes[msg.sender];
     if (newStake.tokenAmount > 0) {
       newStake.tokenAmount += _collectedTokenAmount(msg.sender);
     } else {
-      stakers.push(msg.sender);
+      users.push(msg.sender);
     }
 
-    newStake.tokenAmount += amount_;
+    newStake.tokenAmount += amount;
     totalStakedAmount += (newStake.tokenAmount - stakes[msg.sender].tokenAmount);
     newStake.stakedTime = block.timestamp;
 
     stakes[msg.sender] = newStake;
 
-    IERC20(cil).transferFrom(msg.sender, address(this), amount_);
+    IERC20(cil).transferFrom(msg.sender, address(this), amount);
 
     emit StakeUpdated(msg.sender, newStake.tokenAmount, newStake.lockedAmount);
   }
 
   /**
    * @dev unstake staked token
-   * @param amount_ token amount to unstake
+   * @param amount token amount to unstake
    */
-  function unStake(uint256 amount_) external {
+  function unStake(uint256 amount) external {
     uint256 rewardAmount = _collectedTokenAmount(msg.sender);
 
     Stake memory newStake = stakes[msg.sender];
     uint256 newTotalStakedAmount = totalStakedAmount;
 
-    uint256 withdrawAmount = amount_;
+    uint256 withdrawAmount = amount;
 
-    if (newStake.tokenAmount + rewardAmount < newStake.lockedAmount + amount_) {
+    if (newStake.tokenAmount + rewardAmount < newStake.lockedAmount + amount) {
       withdrawAmount = newStake.tokenAmount + rewardAmount - newStake.lockedAmount;
     }
 
@@ -91,10 +91,10 @@ contract CILStaking is ICILStaking {
     newTotalStakedAmount -= withdrawAmount;
 
     if (newStake.tokenAmount == 0) {
-      for (uint256 i = 0; i < stakers.length; i++) {
-        if (stakers[i] == msg.sender) {
-          stakers[i] = stakers[stakers.length - 1];
-          stakers.pop();
+      for (uint256 i = 0; i < users.length; i++) {
+        if (users[i] == msg.sender) {
+          users[i] = users[users.length - 1];
+          users.pop();
         }
       }
     }
@@ -111,58 +111,58 @@ contract CILStaking is ICILStaking {
    * @dev return colleted token amount
    * @return collectedAmount total collected token amount
    */
-  function collectedToken(address staker_) external view returns (uint256 collectedAmount) {
-    collectedAmount = _collectedTokenAmount(staker_);
+  function collectedToken(address user) external view returns (uint256 collectedAmount) {
+    collectedAmount = _collectedTokenAmount(user);
   }
 
   /**
    * @dev return colleted token amount
-   * @param staker_ staker address
+   * @param user user address
    * @return stakingAmount lockable staking token amount
    */
-  function lockableCil(address staker_) external view returns (uint256 stakingAmount) {
-    stakingAmount = stakes[staker_].tokenAmount - stakes[staker_].lockedAmount;
+  function lockableCil(address user) external view returns (uint256 stakingAmount) {
+    stakingAmount = stakes[user].tokenAmount - stakes[user].lockedAmount;
   }
 
   /**
    * @dev return colleted token amount
-   * @param staker_ staker address
+   * @param user user address
    * @return stakingAmount unlocked staking token amount
    */
-  function lockedCil(address staker_) external view returns (uint256 stakingAmount) {
-    stakingAmount = stakes[staker_].lockedAmount;
+  function lockedCil(address user) external view returns (uint256 stakingAmount) {
+    stakingAmount = stakes[user].lockedAmount;
   }
 
   /**
    * @dev lock staked token: called from marketplace contract
-   * @param amount_ token amount to lock
+   * @param amount token amount to lock
    */
-  function lock(address staker_, uint256 amount_) external {
+  function lock(address user, uint256 amount) external {
     require(msg.sender == marketplace, "CILStaking: forbidden");
-    require(stakes[staker_].tokenAmount >= amount_, "CILStaking: insufficient staking amount");
+    require(stakes[user].tokenAmount >= amount, "CILStaking: insufficient staking amount");
 
-    stakes[staker_].lockedAmount = amount_;
+    stakes[user].lockedAmount = amount;
 
-    emit StakeUpdated(staker_, stakes[staker_].tokenAmount, amount_);
+    emit StakeUpdated(user, stakes[user].tokenAmount, amount);
   }
 
   /// @dev remove staking data
-  function remove(address staker_) external {
+  function remove(address user) external {
     require(msg.sender == marketplace, "CILStaking: forbidden");
 
-    Stake memory newStake = stakes[staker_];
+    Stake memory newStake = stakes[user];
 
-    uint256 reward = _collectedTokenAmount(staker_) + newStake.stakedTime;
+    uint256 reward = _collectedTokenAmount(user) + newStake.stakedTime;
 
     newStake.stakedTime = block.timestamp;
     newStake.tokenAmount = 0;
     newStake.lockedAmount = 0;
 
-    stakes[staker_] = newStake;
+    stakes[user] = newStake;
 
     IERC20(cil).transfer(multiSig, reward);
 
-    emit StakeUpdated(staker_, 0, 0);
+    emit StakeUpdated(user, 0, 0);
   }
 
   /// @dev return total releasable token amount of staking contract
@@ -173,19 +173,18 @@ contract CILStaking is ICILStaking {
   /// @dev return total stake point of staking contract stake point = amount * period
   function _totalStakePoint() private view returns (uint256 totalStakePoint) {
     totalStakePoint = 0;
-    for (uint256 i = 0; i < stakers.length; i++) {
+    for (uint256 i = 0; i < users.length; i++) {
       totalStakePoint +=
-        stakes[stakers[i]].tokenAmount *
-        (block.timestamp - stakes[stakers[i]].stakedTime);
+        stakes[users[i]].tokenAmount *
+        (block.timestamp - stakes[users[i]].stakedTime);
     }
   }
 
   /// @dev get collected token amount
-  function _collectedTokenAmount(address staker_) private view returns (uint256) {
+  function _collectedTokenAmount(address user) private view returns (uint256) {
     uint256 totalReleasable = _totalReleasable();
     uint256 totalStakePoint = _totalStakePoint();
-    uint256 stakePoint = stakes[staker_].tokenAmount *
-      (block.timestamp - stakes[staker_].stakedTime);
+    uint256 stakePoint = stakes[user].tokenAmount * (block.timestamp - stakes[user].stakedTime);
 
     if (stakePoint == 0) {
       return 0;

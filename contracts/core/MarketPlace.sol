@@ -35,7 +35,7 @@ contract MarketPlace is Ownable {
     uint128 amount;
     uint128 minAmount;
     uint128 maxAmount;
-    uint128 offerredAmount;
+    uint128 offeredAmount;
     bool priceType; // 0 => fixed, 1 => percent
     uint8 paymentMethod; // 0 => BankTransfer, 1 => Other
     address token;
@@ -87,10 +87,16 @@ contract MarketPlace is Ownable {
   );
 
   /// @notice fires when update position
-  event PositionUpdated(bytes32 indexed key, uint128 amount);
+  event PositionUpdated(bytes32 indexed key, uint128 amount, uint128 offeredAmount);
 
   /// @notice fires when position state change
-  event OfferCreated(bytes32 offerKey, bytes32 indexed positionKey, uint128 amount, string terms);
+  event OfferCreated(
+    bytes32 offerKey,
+    bytes32 indexed positionKey,
+    address indexed creator,
+    uint128 amount,
+    string terms
+  );
 
   /// @notice fires when cancel offer
   event OfferCanceled(bytes32 indexed key);
@@ -278,7 +284,7 @@ contract MarketPlace is Ownable {
       IERC20(positions[key].token).transferFrom(msg.sender, address(this), amount);
     }
 
-    emit PositionUpdated(key, positions[key].amount);
+    emit PositionUpdated(key, positions[key].amount, positions[key].offeredAmount);
   }
 
   /**
@@ -290,7 +296,7 @@ contract MarketPlace is Ownable {
     require(positions[key].creator != address(0), "MarketPlace: not exist such position");
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
     require(
-      positions[key].amount >= positions[key].offerredAmount + amount,
+      positions[key].amount >= positions[key].offeredAmount + amount,
       "MarketPlace: insufficient amount"
     );
 
@@ -302,7 +308,7 @@ contract MarketPlace is Ownable {
       IERC20(positions[key].token).transfer(msg.sender, amount);
     }
 
-    emit PositionUpdated(key, positions[key].amount);
+    emit PositionUpdated(key, positions[key].amount, positions[key].offeredAmount);
   }
 
   /**
@@ -351,10 +357,11 @@ contract MarketPlace is Ownable {
 
     bytes32 key = getOfferKey(positionKey, amount, msg.sender, block.timestamp);
 
-    positions[positionKey].offerredAmount += uint128(tokenAmount);
+    positions[positionKey].offeredAmount += uint128(tokenAmount);
     offers[key] = Offer(positionKey, uint128(tokenAmount), msg.sender, false, false);
 
-    emit OfferCreated(key, positionKey, amount, terms);
+    emit OfferCreated(key, positionKey, msg.sender, amount, terms);
+    emit PositionUpdated(key, positions[key].amount, positions[key].offeredAmount);
   }
 
   /**
@@ -366,8 +373,9 @@ contract MarketPlace is Ownable {
     require(!offers[key].released && !offers[key].canceled, "MarketPlace: offer already finished");
 
     offers[key].canceled = true;
-    positions[offers[key].positionKey].offerredAmount -= offers[key].amount;
+    positions[offers[key].positionKey].offeredAmount -= offers[key].amount;
 
+    emit PositionUpdated(key, positions[key].amount, positions[key].offeredAmount);
     emit OfferCanceled(key);
   }
 
@@ -385,7 +393,7 @@ contract MarketPlace is Ownable {
 
     offers[key].released = true;
     positions[positionKey].amount -= offers[key].amount;
-    positions[positionKey].offerredAmount -= offers[key].amount;
+    positions[positionKey].offeredAmount -= offers[key].amount;
 
     uint256 fee = (offers[key].amount * feePoint) / 10000;
     if (positions[positionKey].token == address(0)) {
@@ -396,6 +404,7 @@ contract MarketPlace is Ownable {
       IERC20(positions[positionKey].token).transfer(multiSig, fee);
     }
 
+    emit PositionUpdated(key, positions[key].amount, positions[key].offeredAmount);
     emit OfferReleased(key);
   }
 
@@ -437,7 +446,7 @@ contract MarketPlace is Ownable {
     require(!offers[key].released && !offers[key].canceled, "MarketPlace: offer already finished");
 
     offers[key].canceled = true;
-    positions[offers[key].positionKey].offerredAmount -= offers[key].amount;
+    positions[offers[key].positionKey].offeredAmount -= offers[key].amount;
 
     emit OfferCanceled(key);
   }
@@ -458,7 +467,7 @@ contract MarketPlace is Ownable {
       IERC20(positions[key].token).transfer(multiSig, positionAmount);
     }
 
-    emit PositionUpdated(key, 0);
+    emit PositionUpdated(key, positions[key].amount, positions[key].offeredAmount);
     emit AccountBlocked(positions[key].creator);
   }
 }

@@ -148,7 +148,7 @@ describe("Cil MarketPlace test", () => {
 
     await expect(marketPlace.connect(alice).increasePosition(positionKey, parseEther("1")))
       .to.emit(marketPlace, "PositionUpdated")
-      .withArgs(positionKey, parseEther("6"));
+      .withArgs(positionKey, parseEther("6"), 0);
 
     let position = await marketPlace.positions(positionKey);
 
@@ -156,7 +156,7 @@ describe("Cil MarketPlace test", () => {
 
     await expect(marketPlace.connect(alice).decreasePosition(positionKey, parseEther("1")))
       .to.emit(marketPlace, "PositionUpdated")
-      .withArgs(positionKey, parseEther("5"));
+      .withArgs(positionKey, parseEther("5"), 0);
 
     position = await marketPlace.positions(positionKey);
 
@@ -335,7 +335,7 @@ describe("Cil MarketPlace test", () => {
     );
     await expect(marketPlace.connect(deployer).forceRemovePosition(positionKey))
       .to.emit(marketPlace, "PositionUpdated")
-      .withArgs(positionKey, 0)
+      .withArgs(positionKey, 0, 0)
       .emit(marketPlace, "AccountBlocked")
       .withArgs(alice.address);
 

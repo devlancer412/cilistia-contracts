@@ -104,6 +104,7 @@ contract CILStaking is ICILStaking {
 
     IERC20(cil).transfer(msg.sender, withdrawAmount);
 
+    emit StakeUpdated(msg.sender, newStake.tokenAmount, newStake.lockedAmount);
     emit UnStaked(msg.sender, withdrawAmount);
   }
 

@@ -133,6 +133,11 @@ contract MarketPlace is Ownable {
     _;
   }
 
+  modifier validPosition(bytes32 key) {
+    require(positions[key].creator != address(0), "MarketPlace: not exist such position");
+    _;
+  }
+
   /// @dev calcualate key of position
   function getPositionKey(
     uint8 paymentMethod,
@@ -268,12 +273,17 @@ contract MarketPlace is Ownable {
   }
 
   /**
-   * @dev increate position amount
+   * @dev increase position amount
    * @param key key of position
    * @param amount amount to increase
    */
-  function increasePosition(bytes32 key, uint128 amount) external payable initialized noBlocked {
-    require(positions[key].creator != address(0), "MarketPlace: not exist such position");
+  function increasePosition(bytes32 key, uint128 amount)
+    external
+    payable
+    initialized
+    noBlocked
+    validPosition(key)
+  {
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
 
     positions[key].amount += amount;
@@ -292,8 +302,12 @@ contract MarketPlace is Ownable {
    * @param key key of position
    * @param amount amount to increase
    */
-  function decreasePosition(bytes32 key, uint128 amount) external initialized noBlocked {
-    require(positions[key].creator != address(0), "MarketPlace: not exist such position");
+  function decreasePosition(bytes32 key, uint128 amount)
+    external
+    initialized
+    noBlocked
+    validPosition(key)
+  {
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
     require(
       positions[key].amount >= positions[key].offeredAmount + amount,
@@ -321,9 +335,7 @@ contract MarketPlace is Ownable {
     bytes32 positionKey,
     uint128 amount,
     string memory terms
-  ) external initialized noBlocked {
-    require(positions[positionKey].creator != address(0), "MarketPlace: such position don't exist");
-
+  ) external initialized noBlocked validPosition(positionKey) {
     require(positions[positionKey].minAmount <= amount, "MarketPlace: amount less than min");
     require(positions[positionKey].maxAmount >= amount, "MarketPlace: amount exceed max");
 

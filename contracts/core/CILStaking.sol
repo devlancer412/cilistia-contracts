@@ -95,6 +95,7 @@ contract CILStaking is ICILStaking {
         if (users[i] == msg.sender) {
           users[i] = users[users.length - 1];
           users.pop();
+          break;
         }
       }
     }

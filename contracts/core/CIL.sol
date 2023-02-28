@@ -3,14 +3,13 @@ pragma solidity ^0.8.9;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 /// @notice utility and governance token of the Cilistia protocol. (https://docs.cilistia.com/cil)
-contract CIL is Context, ERC20, Ownable {
+contract CIL is ERC20, Ownable {
   /// @notice token initialize state
-  bool public initialized = false;
+  bool public initialized;
   /// @notice community multiSig contract address
   address public immutable multiSig;
 
@@ -21,16 +20,6 @@ contract CIL is Context, ERC20, Ownable {
   address public pool;
   /// @notice liquidity extension
   address public liquidityExtension;
-
-  /// @notice erc20 variables
-  mapping(address => uint256) private _balances;
-
-  mapping(address => mapping(address => uint256)) private _allowances;
-
-  uint256 private _totalSupply;
-
-  string private _name;
-  string private _symbol;
 
   /// @notice fires when initialize token
   event Initialized(address pool);
@@ -75,8 +64,8 @@ contract CIL is Context, ERC20, Ownable {
   }
 
   /**
-   * @dev renounce price of CIL ($ per CIL)
-   * @param staking_ price of the cil token
+   * @dev renounce staking contract address
+   * @param staking_ address of staking contract
    */
   function renounceStaking(address staking_) external onlyOwner {
     require(staking_ != address(0), "CILPreSale: invalid staking address");

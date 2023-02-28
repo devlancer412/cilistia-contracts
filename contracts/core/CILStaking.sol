@@ -21,11 +21,10 @@ contract CILStaking is ICILStaking {
 
   /// @notice active stakes for each user
   mapping(address => Stake) public stakes;
-  /// @notice active user address list
-  address[] private users;
 
   /// @notice total staked token amount
   uint256 public totalStakedAmount;
+  uint256 public totalNegativePoint;
 
   /// @notice lock time - immutable 1 weeks
   uint256 public immutable lockTime = 1 weeks;
@@ -51,14 +50,14 @@ contract CILStaking is ICILStaking {
    */
   function stake(uint256 amount) external {
     Stake memory newStake = stakes[msg.sender];
-    if (newStake.tokenAmount > 0) {
-      newStake.tokenAmount += _collectedTokenAmount(msg.sender);
-    } else {
-      users.push(msg.sender);
-    }
+    newStake.tokenAmount += _collectedTokenAmount(msg.sender);
 
     newStake.tokenAmount += amount;
     totalStakedAmount += (newStake.tokenAmount - stakes[msg.sender].tokenAmount);
+    uint256 negativePoint = totalNegativePoint + (newStake.tokenAmount * block.timestamp);
+    totalNegativePoint =
+      negativePoint -
+      (stakes[msg.sender].tokenAmount * stakes[msg.sender].stakedTime);
     newStake.stakedTime = block.timestamp;
 
     stakes[msg.sender] = newStake;
@@ -90,15 +89,10 @@ contract CILStaking is ICILStaking {
     newTotalStakedAmount += rewardAmount;
     newTotalStakedAmount -= withdrawAmount;
 
-    if (newStake.tokenAmount == 0) {
-      for (uint256 i = 0; i < users.length; i++) {
-        if (users[i] == msg.sender) {
-          users[i] = users[users.length - 1];
-          users.pop();
-          break;
-        }
-      }
-    }
+    uint256 negativePoint = totalNegativePoint + (newStake.tokenAmount * block.timestamp);
+    totalNegativePoint =
+      negativePoint -
+      (stakes[msg.sender].tokenAmount * stakes[msg.sender].stakedTime);
 
     stakes[msg.sender] = newStake;
     totalStakedAmount = newTotalStakedAmount;
@@ -174,12 +168,7 @@ contract CILStaking is ICILStaking {
 
   /// @dev return total stake point of staking contract stake point = amount * period
   function _totalStakePoint() private view returns (uint256 totalStakePoint) {
-    totalStakePoint = 0;
-    for (uint256 i = 0; i < users.length; i++) {
-      totalStakePoint +=
-        stakes[users[i]].tokenAmount *
-        (block.timestamp - stakes[users[i]].stakedTime);
-    }
+    totalStakePoint = totalStakedAmount * block.timestamp - totalNegativePoint;
   }
 
   /// @dev get collected token amount

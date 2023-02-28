@@ -2,13 +2,13 @@
 pragma solidity ^0.8.9;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 /// @notice utility and governance token of the Cilistia protocol. (https://docs.cilistia.com/cil)
-contract CIL is Context, IERC20, IERC20Metadata, Ownable {
+contract CIL is Context, ERC20, Ownable {
   /// @notice token initialize state
   bool public initialized = false;
   /// @notice community multiSig contract address
@@ -36,9 +36,7 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
   event Initialized(address pool);
 
   /// @param multiSig_ multi sign contract address
-  constructor(address multiSig_) {
-    _name = "Cilistia";
-    _symbol = "CIL";
+  constructor(address multiSig_) ERC20("Cilistia", "CIL") {
     multiSig = multiSig_;
   }
 
@@ -90,174 +88,17 @@ contract CIL is Context, IERC20, IERC20Metadata, Ownable {
     address from,
     address to,
     uint256 amount
-  ) internal virtual {
-    require(from != address(0), "ERC20: transfer from the zero address");
-    require(to != address(0), "ERC20: transfer to the zero address");
-
-    _beforeTokenTransfer(from, to, amount);
-
-    uint256 fromBalance = _balances[from];
-    require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
-    unchecked {
-      _balances[from] = fromBalance - amount;
-    }
-    if (initialized && from != liquidityExtension && (from == pool || to == pool)) {
-      uint256 totalFee = amount / 100; // 1% of swap amount
-      uint256 toStaking = (totalFee * 7) / 10; // send 70% to staking contract
-      _balances[staking] += toStaking;
-      _balances[multiSig] += (totalFee - toStaking); // send 30% to team multisig wallet
-      _balances[to] += (amount - totalFee);
-    } else {
-      _balances[to] += amount;
+  ) internal virtual override {
+    if (from == liquidityExtension || to == liquidityExtension || (from != pool && to != pool)) {
+      super._transfer(from, to, amount);
+      return;
     }
 
-    emit Transfer(from, to, amount);
+    uint256 totalFee = amount / 100; // 1% of swap amount
+    uint256 toStaking = (totalFee * 7) / 10; // send 70% to staking contract
 
-    _afterTokenTransfer(from, to, amount);
+    super._transfer(from, staking, toStaking);
+    super._transfer(from, multiSig, totalFee - toStaking);
+    super._transfer(from, to, amount - totalFee);
   }
-
-  ////////////////////////////////////////////////////
-  // ERC20 functions
-  ////////////////////////////////////////////////////
-
-  function name() external view virtual override returns (string memory) {
-    return _name;
-  }
-
-  function symbol() external view virtual override returns (string memory) {
-    return _symbol;
-  }
-
-  function decimals() external view virtual override returns (uint8) {
-    return 18;
-  }
-
-  function totalSupply() external view virtual override returns (uint256) {
-    return _totalSupply;
-  }
-
-  function balanceOf(address account) external view virtual override returns (uint256) {
-    return _balances[account];
-  }
-
-  function transfer(address to, uint256 amount) external virtual override returns (bool) {
-    address owner = _msgSender();
-    _transfer(owner, to, amount);
-    return true;
-  }
-
-  function allowance(address owner, address spender)
-    public
-    view
-    virtual
-    override
-    returns (uint256)
-  {
-    return _allowances[owner][spender];
-  }
-
-  function approve(address spender, uint256 amount) external virtual override returns (bool) {
-    address owner = _msgSender();
-    _approve(owner, spender, amount);
-    return true;
-  }
-
-  function transferFrom(
-    address from,
-    address to,
-    uint256 amount
-  ) external virtual override returns (bool) {
-    address spender = _msgSender();
-    _spendAllowance(from, spender, amount);
-    _transfer(from, to, amount);
-    return true;
-  }
-
-  function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-    address owner = _msgSender();
-    _approve(owner, spender, allowance(owner, spender) + addedValue);
-    return true;
-  }
-
-  function decreaseAllowance(address spender, uint256 subtractedValue)
-    external
-    virtual
-    returns (bool)
-  {
-    address owner = _msgSender();
-    uint256 currentAllowance = allowance(owner, spender);
-    require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
-    unchecked {
-      _approve(owner, spender, currentAllowance - subtractedValue);
-    }
-
-    return true;
-  }
-
-  function _mint(address account, uint256 amount) internal virtual {
-    require(account != address(0), "ERC20: mint to the zero address");
-
-    _beforeTokenTransfer(address(0), account, amount);
-
-    _totalSupply += amount;
-    _balances[account] += amount;
-    emit Transfer(address(0), account, amount);
-
-    _afterTokenTransfer(address(0), account, amount);
-  }
-
-  function _burn(address account, uint256 amount) internal virtual {
-    require(account != address(0), "ERC20: burn from the zero address");
-
-    _beforeTokenTransfer(account, address(0), amount);
-
-    uint256 accountBalance = _balances[account];
-    require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
-    unchecked {
-      _balances[account] = accountBalance - amount;
-    }
-    _totalSupply -= amount;
-
-    emit Transfer(account, address(0), amount);
-
-    _afterTokenTransfer(account, address(0), amount);
-  }
-
-  function _approve(
-    address owner,
-    address spender,
-    uint256 amount
-  ) internal virtual {
-    require(owner != address(0), "ERC20: approve from the zero address");
-    require(spender != address(0), "ERC20: approve to the zero address");
-
-    _allowances[owner][spender] = amount;
-    emit Approval(owner, spender, amount);
-  }
-
-  function _spendAllowance(
-    address owner,
-    address spender,
-    uint256 amount
-  ) internal virtual {
-    uint256 currentAllowance = allowance(owner, spender);
-    if (currentAllowance != type(uint256).max) {
-      require(currentAllowance >= amount, "ERC20: insufficient allowance");
-      unchecked {
-        _approve(owner, spender, currentAllowance - amount);
-      }
-    }
-  }
-
-  function _beforeTokenTransfer(
-    address from,
-    address to,
-    uint256 amount
-  ) internal virtual {}
-
-  function _afterTokenTransfer(
-    address from,
-    address to,
-    uint256 amount
-  ) internal virtual {}
 }

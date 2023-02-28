@@ -7,9 +7,8 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import {IUniswapV2Pair} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
 import {ICILStaking} from "./interfaces/ICILStaking.sol";
-
-import "hardhat/console.sol";
 
 /**
  * @title Cilistia P2P MarketPlace
@@ -17,7 +16,7 @@ import "hardhat/console.sol";
  * price decimals 8
  * percent decimals 2
  */
-contract MarketPlace is Ownable {
+contract MarketPlace is Ownable, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   struct PositionCreateParam {
@@ -228,6 +227,7 @@ contract MarketPlace is Ownable {
     initialized
     whitelisted(params.token)
     noBlocked
+    nonReentrant
   {
     bytes32 key = getPositionKey(
       params.paymentMethod,
@@ -283,6 +283,7 @@ contract MarketPlace is Ownable {
     initialized
     noBlocked
     validPosition(key)
+    nonReentrant
   {
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
 
@@ -307,6 +308,7 @@ contract MarketPlace is Ownable {
     initialized
     noBlocked
     validPosition(key)
+    nonReentrant
   {
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
     require(
@@ -335,7 +337,9 @@ contract MarketPlace is Ownable {
     bytes32 positionKey,
     uint128 amount,
     string memory terms
-  ) external initialized noBlocked validPosition(positionKey) {
+  ) external initialized noBlocked nonReentrant {
+    require(positions[positionKey].creator != address(0), "MarketPlace: such position don't exist");
+
     require(positions[positionKey].minAmount <= amount, "MarketPlace: amount less than min");
     require(positions[positionKey].maxAmount >= amount, "MarketPlace: amount exceed max");
 
@@ -380,7 +384,7 @@ contract MarketPlace is Ownable {
    * @dev cancel offer
    * @param key key of offer
    */
-  function cancelOffer(bytes32 key) external noBlocked {
+  function cancelOffer(bytes32 key) external noBlocked nonReentrant {
     require(offers[key].creator == msg.sender, "MarketPlace: you aren't creator of this offer");
     require(!offers[key].released && !offers[key].canceled, "MarketPlace: offer already finished");
 

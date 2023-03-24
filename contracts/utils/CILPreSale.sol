@@ -23,7 +23,7 @@ contract CILPreSale is Ownable {
   address public immutable signer;
 
   /// @notice price per CIL
-  uint256 public pricePerCIL = 800;
+  uint256 public pricePerCIL = 500;
 
   /// @notice preSale period
   uint32 public openingTime;
@@ -56,13 +56,7 @@ contract CILPreSale is Ownable {
    * @param USDC_ usdc address
    * @param CIL_ cil token address
    */
-  constructor(
-    address signer_,
-    address multiSig_,
-    address USDT_,
-    address USDC_,
-    address CIL_
-  ) {
+  constructor(address signer_, address multiSig_, address USDT_, address USDC_, address CIL_) {
     require(signer_ != address(0), "CILPreSale: invalid signer address");
     require(multiSig_ != address(0), "CILPreSale: invalid multiSig address");
     require(USDT_ != address(0), "CILPreSale: invalid USDT address");
@@ -137,15 +131,15 @@ contract CILPreSale is Ownable {
     uint256 multiplier = IERC20Metadata(CIL).decimals() - tokenDecimalToDeposit;
     uint256 currentAmountInUSD = (IERC20(CIL).balanceOf(_msgSender()) * pricePerCIL) /
       100 /
-      (10**multiplier);
+      (10 ** multiplier);
 
     require(
-      amountToDeposit_ + currentAmountInUSD <= 1000 * (10**tokenDecimalToDeposit),
+      amountToDeposit_ + currentAmountInUSD <= 1000 * (10 ** tokenDecimalToDeposit),
       "CILPreSale: max deposit amount is $1000 per wallet"
     );
 
     uint256 _balance = balance();
-    uint256 amountWithdrawalCIL = (amountToDeposit_ * (10**multiplier) * 100) / pricePerCIL;
+    uint256 amountWithdrawalCIL = (amountToDeposit_ * (10 ** multiplier) * 100) / pricePerCIL;
     require(amountWithdrawalCIL <= _balance, "CILPreSale: insufficient withdrawal amount");
     require(
       IERC20(tokenToDeposit).balanceOf(_msgSender()) >= amountToDeposit_,
@@ -174,7 +168,7 @@ contract CILPreSale is Ownable {
    * @param closingTime_ closing time of airdrop
    */
   function setPeriod(uint32 openingTime_, uint32 closingTime_) external onlyOwner {
-    require(!isOpen(), "CILPreSale: already opened");
+    // require(!isOpen(), "CILPreSale: already opened");
     require(closingTime_ > openingTime_, "CILPreSale: invalid time window");
     openingTime = openingTime_;
     closingTime = closingTime_;

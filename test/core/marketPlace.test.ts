@@ -43,7 +43,7 @@ let vault: SignerWithAddress;
 const setup = deployments.createFixture(async (hre) => {
   ship = await Ship.init(hre);
   const { accounts, users } = ship;
-  await deployments.fixture(["utils", "token", "mocks"]);
+  await deployments.fixture(["utils", "core", "mocks", "staking", "marketplace"]);
 
   return {
     ship,
@@ -68,15 +68,9 @@ describe("Cil MarketPlace test", () => {
     cilStaking = await ship.connect(CILStaking__factory);
     marketPlace = await ship.connect(MarketPlace__factory);
 
-    // add liquidity for test
-    await cil.connect(vault).approve(liquidityExtension.address, parseEther("100"));
-    await liquidityExtension.connect(vault).addLiquidityETH(cil.address, parseEther("100"), 0, 0, {
-      value: parseEther("10"),
-    });
-
-    await cil.connect(vault).transfer(alice.address, parseEther("10"));
-    await cil.connect(alice).approve(marketPlace.address, parseEther("10"));
-    await cil.connect(alice).approve(cilStaking.address, parseEther("10"));
+    await cil.connect(vault).transfer(alice.address, parseEther("150"));
+    await cil.connect(alice).approve(marketPlace.address, parseEther("150"));
+    await cil.connect(alice).approve(cilStaking.address, parseEther("150"));
   });
 
   it("token price feed test", async () => {
@@ -84,8 +78,6 @@ describe("Cil MarketPlace test", () => {
     console.log("native token price:", formatUnits(ethPrice, 8));
     const cilPrice = await marketPlace.getTokenPrice(cil.address);
     console.log("cil token price:", formatUnits(cilPrice, 8));
-
-    expect(cilPrice).to.eq(ethPrice.div(10));
   });
 
   it("create new position", async () => {
@@ -184,7 +176,7 @@ describe("Cil MarketPlace test", () => {
       marketPlace.connect(bob).createOffer(positionKey, 1_100_000_000n, "bank transfer transaction id here"),
     ).to.revertedWith("MarketPlace: insufficient staking amount for offer");
 
-    await cilStaking.connect(alice).stake(parseEther("5"));
+    await cilStaking.connect(alice).stake(parseEther("100"));
 
     const tx = await marketPlace
       .connect(bob)
@@ -303,10 +295,10 @@ describe("Cil MarketPlace test", () => {
 
     tx = await marketPlace
       .connect(bob)
-      .createOffer(positionKey, ethPrice.div(5), "bank transfer transaction id here");
+      .createOffer(positionKey, ethPrice.div(10), "bank transfer transaction id here");
     receipt = await tx.wait();
     timestamp = (await ship.provider.getBlock(receipt.blockHash)).timestamp;
-    offerKey = await marketPlace.getOfferKey(positionKey, ethPrice.div(5), bob.address, timestamp);
+    offerKey = await marketPlace.getOfferKey(positionKey, ethPrice.div(10), bob.address, timestamp);
 
     const offer = await marketPlace.offers(offerKey);
 

@@ -1,28 +1,32 @@
-import { isAddress } from "ethers/lib/utils";
+import { isAddress, parseEther } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
-
 import {
   CILAirdrop__factory,
   CILPreSale__factory,
-  CILStaking__factory,
   CIL__factory,
+  IWETH9__factory,
   LiquidityExtension__factory,
-  MarketPlace__factory,
   MockERC20,
 } from "../types";
 import { Ship } from "../utils";
 import { contracts } from "../config/constants";
-import { MarketPlace } from "./../types/contracts/core/MarketPlace";
-import { constants } from "ethers";
+import { getSqrtPriceX96 } from "./math";
+import { IPeripheryImmutableState__factory } from "./../types/factories/contracts/uniswap-contracts/interfaces/IPeripheryImmutableState__factory";
+import { constants, BigNumber } from "ethers";
 
 const func: DeployFunction = async (hre) => {
   const { deploy, connect, accounts } = await Ship.init(hre);
 
-  const network = hre.network.name as "mainnet" | "avax" | "goerli" | "hardhat";
+  const network = hre.network.name as "arbitrum" | "goerli" | "hardhat";
   let usdtAddress = contracts[network]?.USDT;
   let usdcAddress = contracts[network]?.USDC;
   const uniswapRouterAddress = contracts[network].uniswapRouter;
-  const nativeTokenFeed = contracts[network].priceFeeds.nativeToken;
+  const nonfungiblePositionManager = contracts[network].nonfungiblePositionManager;
+
+  const uniswapRouterContract = IPeripheryImmutableState__factory.connect(
+    uniswapRouterAddress,
+    accounts.deployer,
+  );
 
   let signer = process.env.CIL_SIGNER as string;
   let multiSig = process.env.CIL_MULTISIG as string;
@@ -42,9 +46,14 @@ const func: DeployFunction = async (hre) => {
   }
 
   const cil = await connect(CIL__factory);
-  const cilStaking = await connect(CILStaking__factory);
 
-  const airdrop = await deploy(CILAirdrop__factory, {
+  const ogAirdrop = await deploy(CILAirdrop__factory, {
+    aliasName: "OGAirdrop",
+    args: [signer, cil.address],
+  });
+
+  const trueOgAirdrop = await deploy(CILAirdrop__factory, {
+    aliasName: "TrueOGAirdrop",
     args: [signer, cil.address],
   });
 
@@ -53,26 +62,41 @@ const func: DeployFunction = async (hre) => {
   });
 
   const liquidityExtension = await deploy(LiquidityExtension__factory, {
-    args: [uniswapRouterAddress],
+    args: [nonfungiblePositionManager, cil.address],
   });
 
   if (!(await cil.initialized())) {
+    const wethAddress = await uniswapRouterContract.WETH9();
+    const isFirst = BigNumber.from(cil.address).lt(BigNumber.from(wethAddress));
+    const sqrtPriceX96 = await getSqrtPriceX96(6, isFirst);
+
+    console.log("sqrtPriceX96:", sqrtPriceX96);
+
     const tx = await cil.init(
       preSale.address,
-      airdrop.address,
-      cilStaking.address,
-      uniswapRouterAddress,
+      ogAirdrop.address,
+      trueOgAirdrop.address,
+      multiSig,
+      uniswapRouterContract.address,
+      nonfungiblePositionManager,
       liquidityExtension.address,
+      sqrtPriceX96,
     );
     console.info("Initialized cil token on", tx.hash);
     await tx.wait();
   }
 
-  const marketPlace = await connect(MarketPlace__factory);
-  if ((await marketPlace.cilStaking()) == constants.AddressZero) {
-    const tx = await marketPlace.init(cilStaking.address, await cil.pool(), nativeTokenFeed);
-    console.log("Initialize marketplace at", tx.hash);
-    await tx.wait();
+  if (!hre.network.live) {
+    // add liquidity for test
+    const weth = IWETH9__factory.connect(await uniswapRouterContract.WETH9(), accounts.deployer);
+    await cil.connect(accounts.vault).approve(liquidityExtension.address, parseEther("100"));
+    await weth.connect(accounts.vault).deposit({
+      value: parseEther("1"),
+    });
+    await weth.connect(accounts.vault).approve(liquidityExtension.address, parseEther("1"));
+    await liquidityExtension.contract
+      .connect(accounts.vault)
+      .mintNewPosition(parseEther("100"), parseEther("1"));
   }
 };
 

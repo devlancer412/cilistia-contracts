@@ -27,22 +27,23 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: process.env.FORKING_ENABLED === "true",
         blockNumber: Number(process.env.FORKING_BLOCK_NUM) || undefined,
-        url: node_url("goerli"),
+        url: node_url("arbitrum"),
       },
       accounts: accounts("goerli"),
       mining: {
         auto: process.env.AUTO_MINING_ENABLED === "true",
         // interval: Number(process.env.MINING_INTERVAL),
       },
+      allowUnlimitedContractSize: true,
     },
     localhost: {
       url: node_url("localhost"),
       accounts: accounts("localhost"),
       tags: ["local", "test"],
     },
-    mainnet: {
-      url: node_url("mainnet"),
-      accounts: accounts("mainnet"),
+    arbitrum: {
+      url: node_url("arbitrum"),
+      accounts: accounts("arbitrum"),
       tags: ["prod", "live"],
     },
     goerli: {
@@ -53,7 +54,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      mainnet: verifyKey("etherscan"),
+      arbitrum: verifyKey("etherscan"),
       goerli: verifyKey("etherscan"),
     },
   },

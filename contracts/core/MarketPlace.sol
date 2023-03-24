@@ -4,11 +4,11 @@ pragma solidity ^0.8.9;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
-import {IUniswapV2Pair} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import {IUniswapV3Pool} from "../uniswap-contracts/interfaces/IUniswapV3Pool.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {ReentrancyGuard} from "../utils/ReentrancyGuard.sol";
 import {ICILStaking} from "./interfaces/ICILStaking.sol";
+import {ICIL} from "./interfaces/ICIL.sol";
 
 /**
  * @title Cilistia P2P MarketPlace
@@ -195,13 +195,13 @@ contract MarketPlace is Ownable, ReentrancyGuard {
    * @return price price of cil token
    */
   function getCilPrice() public view returns (uint256) {
-    bool isFirst = IUniswapV2Pair(cilPair).token0() == cil;
-    (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(cilPair).getReserves();
+    bool isFirst = IUniswapV3Pool(cilPair).token0() == cil;
+    uint256 priceWithEth = ICIL(cil).getPrice();
 
     uint256 ethPrice = getTokenPrice(address(0));
     uint256 price = isFirst
-      ? ((ethPrice * reserve1) / reserve0)
-      : ((ethPrice * reserve0) / reserve1);
+      ? ((ethPrice * priceWithEth) / 10 ** 18)
+      : ((ethPrice * 10 ** 18) / priceWithEth);
 
     return price;
   }
@@ -221,14 +221,10 @@ contract MarketPlace is Ownable, ReentrancyGuard {
    * @param params position create params
    * @param terms terms of position
    */
-  function createPosition(PositionCreateParam memory params, string memory terms)
-    external
-    payable
-    initialized
-    whitelisted(params.token)
-    noBlocked
-    nonReentrant
-  {
+  function createPosition(
+    PositionCreateParam memory params,
+    string memory terms
+  ) external payable initialized whitelisted(params.token) noBlocked nonReentrant {
     bytes32 key = getPositionKey(
       params.paymentMethod,
       params.price,
@@ -277,14 +273,10 @@ contract MarketPlace is Ownable, ReentrancyGuard {
    * @param key key of position
    * @param amount amount to increase
    */
-  function increasePosition(bytes32 key, uint128 amount)
-    external
-    payable
-    initialized
-    noBlocked
-    validPosition(key)
-    nonReentrant
-  {
+  function increasePosition(
+    bytes32 key,
+    uint128 amount
+  ) external payable initialized noBlocked validPosition(key) nonReentrant {
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
 
     positions[key].amount += amount;
@@ -303,13 +295,10 @@ contract MarketPlace is Ownable, ReentrancyGuard {
    * @param key key of position
    * @param amount amount to increase
    */
-  function decreasePosition(bytes32 key, uint128 amount)
-    external
-    initialized
-    noBlocked
-    validPosition(key)
-    nonReentrant
-  {
+  function decreasePosition(
+    bytes32 key,
+    uint128 amount
+  ) external initialized noBlocked validPosition(key) nonReentrant {
     require(positions[key].creator == msg.sender, "MarketPlace: not owner of this position");
     require(
       positions[key].amount >= positions[key].offeredAmount + amount,
@@ -363,7 +352,7 @@ contract MarketPlace is Ownable, ReentrancyGuard {
       }
     }
 
-    uint256 tokenAmount = (amount * 10**decimals) / price;
+    uint256 tokenAmount = (amount * 10 ** decimals) / price;
     uint256 cilAmount = (amount * 1e18) / getCilPrice();
 
     ICILStaking(cilStaking).lock(
@@ -430,18 +419,14 @@ contract MarketPlace is Ownable, ReentrancyGuard {
    * @param cilPair_ address of cil/eth pair
    * @param ethPricefeed_ weth pricefeed contract address
    */
-  function init(
-    address cilStaking_,
-    address cilPair_,
-    address ethPricefeed_
-  ) external onlyOwner {
+  function init(address cilStaking_, address cilPair_, address ethPricefeed_) external onlyOwner {
     cilStaking = cilStaking_;
     cilPair = cilPair_;
 
-    bool isFirst = IUniswapV2Pair(cilPair).token0() == cil;
+    bool isFirst = IUniswapV3Pool(cilPair).token0() == cil;
     pricefeeds[address(0)] = ethPricefeed_;
     pricefeeds[
-      isFirst ? IUniswapV2Pair(cilPair).token1() : IUniswapV2Pair(cilPair).token0()
+      isFirst ? IUniswapV3Pool(cilPair).token1() : IUniswapV3Pool(cilPair).token0()
     ] = ethPricefeed_;
   }
 

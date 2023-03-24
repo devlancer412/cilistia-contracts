@@ -21,7 +21,7 @@ let vault: SignerWithAddress;
 const setup = deployments.createFixture(async (hre) => {
   ship = await Ship.init(hre);
   const { accounts, users } = ship;
-  await deployments.fixture(["utils", "token", "mocks"]);
+  await deployments.fixture(["utils", "core", "mocks", "staking"]);
 
   return {
     ship,

@@ -1,5 +1,6 @@
 export interface ContractsConfigType {
   uniswapRouter: string;
+  nonfungiblePositionManager: string;
   USDT?: string;
   USDC?: string;
   priceFeeds: {
@@ -8,40 +9,35 @@ export interface ContractsConfigType {
   };
 }
 
-const mainnetContracts: ContractsConfigType = {
-  uniswapRouter: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-  USDT: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-  USDC: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+const arbitrumContracts: ContractsConfigType = {
+  uniswapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+  nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+  USDT: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+  USDC: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
   priceFeeds: {
-    nativeToken: "0xaEA2808407B7319A31A383B6F8B60f04BCa23cE2",
+    nativeToken: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
   },
 };
 const goerliContracts: ContractsConfigType = {
-  uniswapRouter: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-  priceFeeds: {
-    nativeToken: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
-  },
-};
-const hardhatContracts: ContractsConfigType = {
-  uniswapRouter: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-  priceFeeds: {
-    nativeToken: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
-  },
-};
-const avaxContracts: ContractsConfigType = {
-  uniswapRouter: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-  USDT: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-  USDC: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+  uniswapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+  nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
   priceFeeds: {
     nativeToken: "0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e",
   },
 };
 
+const hardhatContracts: ContractsConfigType = {
+  uniswapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+  nonfungiblePositionManager: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+  priceFeeds: {
+    nativeToken: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612",
+  },
+};
+
 export const contracts = {
-  mainnet: mainnetContracts,
+  arbitrum: arbitrumContracts,
   goerli: goerliContracts,
   hardhat: hardhatContracts,
-  avax: avaxContracts,
 };
 
 export const tokenPrice = 6;

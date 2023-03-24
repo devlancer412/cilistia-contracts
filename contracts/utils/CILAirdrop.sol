@@ -19,7 +19,7 @@ contract CILAirdrop is Ownable {
   uint32 public openingTime;
   uint32 public closingTime;
   uint32 public ogNumber;
-  uint256 public totalClaimableAmountPerWallet;
+  uint256 public claimAmountPerWallet;
 
   /// @notice address => claimed timestamp
   mapping(address => uint256) public lastClaimedTime;
@@ -82,7 +82,7 @@ contract CILAirdrop is Ownable {
       "CILAirdrop: already claimed today"
     );
 
-    uint256 tokenAmount = totalClaimableAmountPerWallet / 14;
+    uint256 tokenAmount = claimAmountPerWallet;
 
     lastClaimedTime[_msgSender()] = block.timestamp;
     IERC20(CIL).safeTransfer(_msgSender(), tokenAmount);
@@ -110,12 +110,12 @@ contract CILAirdrop is Ownable {
     uint32 closingTime_,
     uint32 ogNumber_
   ) external onlyOwner {
-    require(!isOpen(), "CILAirdrop: already opened");
+    // require(!isOpen(), "CILAirdrop: already opened");
     require(closingTime_ > openingTime_, "CILAirdrop: invalid time window");
     openingTime = openingTime_;
     closingTime = closingTime_;
     ogNumber = ogNumber_;
-    totalClaimableAmountPerWallet = balance() / ogNumber_;
+    claimAmountPerWallet = balance() / ogNumber_ / 14; // 14 days of airdrop duration
 
     emit SetPeriod(openingTime, closingTime);
   }

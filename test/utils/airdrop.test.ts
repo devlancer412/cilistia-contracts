@@ -24,7 +24,7 @@ const twoWeeks = 2 * 7 * 24 * 60 * 60;
 const setup = deployments.createFixture(async (hre) => {
   ship = await Ship.init(hre);
   const { accounts, users } = ship;
-  await deployments.fixture(["utils", "token", "mocks"]);
+  await deployments.fixture(["utils", "core", "mocks"]);
 
   return {
     ship,
@@ -54,7 +54,7 @@ describe("Cil token airdrop test", () => {
     signer = scaffold.accounts.signer;
 
     cil = await scaffold.ship.connect(CIL__factory);
-    cilAirdrop = await scaffold.ship.connect(CILAirdrop__factory);
+    cilAirdrop = (await scaffold.ship.connect("TrueOGAirdrop")) as CILAirdrop;
   });
 
   describe("Mint test", () => {
@@ -79,7 +79,7 @@ describe("Cil token airdrop test", () => {
         .to.emit(cilAirdrop, "SetPeriod")
         .withArgs(currentTime, closingTime);
 
-      expect(await cilAirdrop.totalClaimableAmountPerWallet()).eq(parseEther("2"));
+      expect(await cilAirdrop.claimAmountPerWallet()).eq(parseEther("2").div(14));
     });
 
     it("Can't claim token before opening time", async () => {

@@ -27,7 +27,7 @@ const twoWeeks = 2 * 7 * 24 * 60 * 60;
 const setup = deployments.createFixture(async (hre) => {
   ship = await Ship.init(hre);
   const { accounts, users } = ship;
-  await deployments.fixture(["utils", "token", "mocks"]);
+  await deployments.fixture(["utils", "core", "mocks"]);
 
   return {
     ship,
@@ -115,12 +115,12 @@ describe("Cil token preSale test", () => {
 
       await expect(cilPreSale.connect(alice).buy(500_000_000, "USDC", sig))
         .to.emit(cilPreSale, "Buy")
-        .withArgs(alice.address, "USDC", 500_000_000, parseEther("62.5"));
+        .withArgs(alice.address, "USDC", 500_000_000, parseEther("100"));
 
       expect(await usdc.balanceOf(alice.address)).to.eq(1_500_000_000);
       expect(await usdc.balanceOf(vault.address)).to.eq(500_000_000);
-      expect(await cil.balanceOf(cilPreSale.address)).to.eq(parseEther("50000").sub(parseEther("62.5")));
-      expect(await cil.balanceOf(alice.address)).to.eq(parseEther("62.5"));
+      expect(await cil.balanceOf(cilPreSale.address)).to.eq(parseEther("50000").sub(parseEther("100")));
+      expect(await cil.balanceOf(alice.address)).to.eq(parseEther("100"));
     });
 
     it("Can't buy token for $1k per wallet", async () => {

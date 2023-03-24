@@ -34,11 +34,7 @@ contract CILStaking is ICILStaking {
    * @param marketplace_ marketplace address
    * @param multiSig_ multi sign wallet address
    */
-  constructor(
-    address cil_,
-    address marketplace_,
-    address multiSig_
-  ) {
+  constructor(address cil_, address marketplace_, address multiSig_) {
     cil = cil_;
     marketplace = marketplace_;
     multiSig = multiSig_;

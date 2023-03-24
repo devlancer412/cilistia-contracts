@@ -1,4 +1,6 @@
+import { constants } from "ethers";
 import { DeployFunction } from "hardhat-deploy/types";
+import { contracts } from "../config/constants";
 import { MockERC20__factory } from "../types";
 import { Ship } from "../utils";
 

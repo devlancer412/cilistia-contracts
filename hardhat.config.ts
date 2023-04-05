@@ -54,7 +54,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      arbitrum: verifyKey("etherscan"),
+      arbitrumOne: verifyKey("arbitrum"),
       goerli: verifyKey("etherscan"),
     },
   },

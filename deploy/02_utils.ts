@@ -57,8 +57,11 @@ const func: DeployFunction = async (hre) => {
     args: [signer, cil.address],
   });
 
+  const multiSig2 = "0xeEAf60Ea83eB2393c9Fea32FD62FC13727eC3434";
+  const multiSig3 = "0x3597e51d68998a52879B6164B1165BdE67a215d0";
+
   const preSale = await deploy(CILPreSale__factory, {
-    args: [signer, multiSig, usdtAddress, usdcAddress, cil.address],
+    args: [signer, multiSig, multiSig2, multiSig3, usdtAddress, usdcAddress, cil.address],
   });
 
   const liquidityExtension = await deploy(LiquidityExtension__factory, {
@@ -76,7 +79,7 @@ const func: DeployFunction = async (hre) => {
       preSale.address,
       ogAirdrop.address,
       trueOgAirdrop.address,
-      multiSig,
+      multiSig2,
       uniswapRouterContract.address,
       nonfungiblePositionManager,
       liquidityExtension.address,
@@ -86,18 +89,18 @@ const func: DeployFunction = async (hre) => {
     await tx.wait();
   }
 
-  if (!hre.network.live) {
-    // add liquidity for test
-    const weth = IWETH9__factory.connect(await uniswapRouterContract.WETH9(), accounts.deployer);
-    await cil.connect(accounts.vault).approve(liquidityExtension.address, parseEther("100"));
-    await weth.connect(accounts.vault).deposit({
-      value: parseEther("1"),
-    });
-    await weth.connect(accounts.vault).approve(liquidityExtension.address, parseEther("1"));
-    await liquidityExtension.contract
-      .connect(accounts.vault)
-      .mintNewPosition(parseEther("100"), parseEther("1"));
-  }
+  // if (!hre.network.live) {
+  //   // add liquidity for test
+  //   const weth = IWETH9__factory.connect(await uniswapRouterContract.WETH9(), accounts.deployer);
+  //   await cil.connect(accounts.vault).approve(liquidityExtension.address, parseEther("100"));
+  //   await weth.connect(accounts.vault).deposit({
+  //     value: parseEther("1"),
+  //   });
+  //   await weth.connect(accounts.vault).approve(liquidityExtension.address, parseEther("1"));
+  //   await liquidityExtension.contract
+  //     .connect(accounts.vault)
+  //     .mintNewPosition(parseEther("100"), parseEther("1"));
+  // }
 };
 
 export default func;

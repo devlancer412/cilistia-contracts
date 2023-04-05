@@ -17,6 +17,8 @@ const func: DeployFunction = async (hre) => {
     throw Error("Invalid multi sign address");
   }
 
+  console.log(multiSig);
+
   await deploy(CIL__factory, {
     args: [multiSig],
   });

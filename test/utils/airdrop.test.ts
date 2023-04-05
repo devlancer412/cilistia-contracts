@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { CIL, CILAirdrop, CILAirdrop__factory, CIL__factory } from "../../types";
+import { CIL, CILAirdrop, CIL__factory } from "../../types";
 import { deployments } from "hardhat";
 import chai from "chai";
 import { solidity } from "ethereum-waffle";

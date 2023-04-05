@@ -4,8 +4,6 @@ import {
   CILStaking,
   CILStaking__factory,
   CIL__factory,
-  IERC20,
-  IERC20__factory,
   LiquidityExtension,
   LiquidityExtension__factory,
   MarketPlace,

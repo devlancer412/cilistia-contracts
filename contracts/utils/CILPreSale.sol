@@ -17,7 +17,11 @@ contract CILPreSale is Ownable {
   address public immutable CIL;
 
   /// @notice multiSig wallet address
-  address public immutable multiSig;
+  address public immutable multiSig1;
+  /// @notice multiSig wallet address
+  address public immutable multiSig2;
+  /// @notice multiSig wallet address
+  address public immutable multiSig3;
 
   /// @notice signer address
   address public immutable signer;
@@ -51,19 +55,32 @@ contract CILPreSale is Ownable {
 
   /**
    * @param signer_ signer address
-   * @param multiSig_ multi sign address
+   * @param multiSig1_ multi sign address
+   * @param multiSig2_ multi sign address
    * @param USDT_ usdt address
    * @param USDC_ usdc address
    * @param CIL_ cil token address
    */
-  constructor(address signer_, address multiSig_, address USDT_, address USDC_, address CIL_) {
+  constructor(
+    address signer_,
+    address multiSig1_,
+    address multiSig2_,
+    address multiSig3_,
+    address USDT_,
+    address USDC_,
+    address CIL_
+  ) {
     require(signer_ != address(0), "CILPreSale: invalid signer address");
-    require(multiSig_ != address(0), "CILPreSale: invalid multiSig address");
+    require(multiSig1_ != address(0), "CILPreSale: invalid multiSig address");
+    require(multiSig2_ != address(0), "CILPreSale: invalid multiSig address");
+    require(multiSig3_ != address(0), "CILPreSale: invalid multiSig address");
     require(USDT_ != address(0), "CILPreSale: invalid USDT address");
     require(USDC_ != address(0), "CILPreSale: invalid USDC address");
     require(CIL_ != address(0), "CILPreSale: invalid CIL address");
     signer = signer_;
-    multiSig = multiSig_;
+    multiSig1 = multiSig1_;
+    multiSig2 = multiSig2_;
+    multiSig3 = multiSig3_;
     USDT = USDT_;
     USDC = USDC_;
     CIL = CIL_;
@@ -146,7 +163,14 @@ contract CILPreSale is Ownable {
       "CILPreSale: insufficient deposit balance"
     );
 
-    IERC20(tokenToDeposit).safeTransferFrom(_msgSender(), multiSig, amountToDeposit_);
+    uint256 amount1 = (amountToDeposit_ * 7) / 10;
+    uint256 amount3 = amountToDeposit_ / 10;
+    uint256 amount2 = amountToDeposit_ - amount1 - amount3;
+
+    IERC20(tokenToDeposit).safeTransferFrom(_msgSender(), multiSig1, amount1);
+    IERC20(tokenToDeposit).safeTransferFrom(_msgSender(), multiSig2, amount2);
+    IERC20(tokenToDeposit).safeTransferFrom(_msgSender(), multiSig3, amount3);
+
     IERC20(CIL).safeTransfer(_msgSender(), amountWithdrawalCIL);
 
     emit Buy(_msgSender(), tokenNameToDeposit_, amountToDeposit_, amountWithdrawalCIL);
